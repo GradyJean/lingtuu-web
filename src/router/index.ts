@@ -8,11 +8,19 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/auth/wechat/callback',
+      name: 'wechat-callback',
+      component: () => import('../views/auth/wechat/WechatCallback.vue'),
+      meta: { requiresAuth: false },
     },
   ],
 })

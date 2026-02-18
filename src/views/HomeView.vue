@@ -1,6 +1,7 @@
 <template>
   <div class="home">
     <h1>Home</h1>
+
     <div class="counter-section">
       <a-card title="Pinia Counter">
         <p>Count: {{ counterStore.count }}</p>

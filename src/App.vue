@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import LoginModal from './components/LoginModal.vue'
 </script>
 
 <template>
-  <div>
-    <HelloWorld />
-    <main>
-      <router-view />
-    </main>
-  </div>
+  <LoginModal />
+  <main>
+    <router-view />
+  </main>
 </template>
 
 <style scoped>
 main {
-  padding: 20px;
+  min-height: 100vh;
 }
 </style>
