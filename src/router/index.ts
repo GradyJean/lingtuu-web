@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HelloWorld from "../components/HelloWorld.vue";
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,14 +7,19 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HelloWorld,
+      component: HomeView,
       meta: { requiresAuth: true },
-    },
-    {
-      path: '/about',
-      name: 'about',
-      component: () => import('../views/AboutView.vue'),
-      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          redirect: '/works',
+        },
+        {
+          path: 'works',
+          name: 'works-list',
+          component: () => import('../views/WorksList.vue'),
+        },
+      ],
     },
     {
       path: '/auth/wechat/callback',
