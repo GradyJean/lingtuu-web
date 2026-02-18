@@ -24,8 +24,8 @@ const router = useRouter()
 
 const showLogin = computed(() => !authStore.isLoggedIn)
 
-function handleLogout() {
-  authStore.logout()
+async function handleLogout() {
+  await authStore.logout()
   router.push('/')
 }
 </script>

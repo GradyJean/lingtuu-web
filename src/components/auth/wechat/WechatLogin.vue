@@ -19,6 +19,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { ArrowLeftOutlined } from '@ant-design/icons-vue'
 import { useAuthStore } from '../../../stores/auth'
 import request from '../../../utils/request'
+import { getDeviceId } from '../../../utils/device'
 
 defineEmits(['back'])
 
@@ -62,9 +63,9 @@ function loadWxLoginScript() {
   })
 }
 
-// 生成随机 state 参数
+// 生成随机 state 参数（使用设备 ID）
 function generateState() {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  return getDeviceId()
 }
 
 // 初始化微信二维码

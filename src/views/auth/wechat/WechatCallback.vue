@@ -91,11 +91,11 @@ onMounted(async () => {
       authStore.setLoginInfo({
         access_token: {
           token: access_token.token,
-          expireAt: access_token.expire_at,
+          expire_at: access_token.expire_at,
         },
         refresh_token: {
           token: refresh_token.token,
-          expireAt: refresh_token.expire_at,
+          expire_at: refresh_token.expire_at,
         },
       })
 

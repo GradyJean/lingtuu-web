@@ -66,16 +66,16 @@ export const useAuthStore = defineStore('auth', () => {
      * 设置登录信息
      */
     function setLoginInfo(data: {
-      access_token: { token: string; expireAt: number }
-      refresh_token: { token: string; expireAt: number }
+      access_token: { token: string; expire_at: number }
+      refresh_token: { token: string; expire_at: number }
     }) {
         accessToken.value = {
             token: data.access_token.token,
-            expire_at: data.access_token.expireAt,
+            expire_at: data.access_token.expire_at,
         }
         refreshToken.value = {
             token: data.refresh_token.token,
-            expire_at: data.refresh_token.expireAt,
+            expire_at: data.refresh_token.expire_at,
         }
         saveToStorage()
         startCheckTimer()
@@ -120,12 +120,12 @@ export const useAuthStore = defineStore('auth', () => {
                 const tokenData = response.data.data
                 setLoginInfo({
                   access_token: {
-                    token: tokenData.accessToken.token,
-                    expireAt: tokenData.accessToken.expireAt,
+                    token: tokenData.access_token.token,
+                    expire_at: tokenData.access_token.expire_at,
                   },
                   refresh_token: {
-                    token: tokenData.refreshToken.token,
-                    expireAt: tokenData.refreshToken.expireAt,
+                    token: tokenData.refresh_token.token,
+                    expire_at: tokenData.refresh_token.expire_at,
                   },
                 })
                 return true
@@ -177,8 +177,17 @@ export const useAuthStore = defineStore('auth', () => {
     /**
      * 退出登录
      */
-    function logout() {
-        clearAuth()
+    async function logout() {
+        try {
+            // 调用后端退出接口
+            await request.post('/auth/logout', {
+                token: accessToken.value?.token,
+            })
+        } catch (error) {
+            console.error('退出登录失败:', error)
+        } finally {
+            clearAuth()
+        }
     }
 
     /**

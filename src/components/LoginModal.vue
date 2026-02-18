@@ -23,9 +23,12 @@
             </a-form-item>
 
             <a-form-item
+              v-if="!loginForm.verify_code_login"
               name="credential"
               label="密码"
-              :rules="[{ required: true, message: '请输入密码' }]"
+              :rules="[
+                { required: !loginForm.verify_code_login, message: '请输入密码' }
+              ]"
             >
               <a-input-password
                 v-model:value="loginForm.credential"
@@ -38,15 +41,15 @@
               </a-input-password>
             </a-form-item>
 
-            <a-form-item v-if="loginForm.verifyCodeLogin">
+            <a-form-item v-if="loginForm.verify_code_login">
               <a-row :gutter="8">
                 <a-col :span="16">
                   <a-form-item
-                    name="verifyCode"
+                    name="verify_code"
                     :rules="[{ required: true, message: '请输入验证码' }]"
                   >
                     <a-input
-                      v-model:value="loginForm.verifyCode"
+                      v-model:value="loginForm.verify_code"
                       placeholder="验证码"
                       size="large"
                     />
@@ -56,7 +59,7 @@
                   <a-button
                     :loading="sendingCode"
                     :disabled="!canSendCode || countdown > 0"
-                    @click="sendVerifyCode"
+                    @click="sendverify_code"
                     block
                   >
                     {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
@@ -66,7 +69,7 @@
             </a-form-item>
 
             <a-form-item>
-              <a-checkbox v-model:checked="loginForm.verifyCodeLogin">
+              <a-checkbox v-model:checked="loginForm.verify_code_login">
                 验证码登录
               </a-checkbox>
               <a class="forgot-password" @click="switchView('forgot')">
@@ -170,11 +173,11 @@
               <a-row :gutter="8">
                 <a-col :span="16">
                   <a-form-item
-                    name="verifyCode"
+                    name="verify_code"
                     :rules="[{ required: true, message: '请输入验证码' }]"
                   >
                     <a-input
-                      v-model:value="registerForm.verifyCode"
+                      v-model:value="registerForm.verify_code"
                       placeholder="验证码"
                       size="large"
                     />
@@ -184,7 +187,7 @@
                   <a-button
                     :loading="sendingCode"
                     :disabled="!canSendCode || countdown > 0"
-                    @click="sendVerifyCode"
+                    @click="sendverify_code"
                     block
                   >
                     {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
@@ -248,11 +251,11 @@
               <a-row :gutter="8">
                 <a-col :span="16">
                   <a-form-item
-                    name="verifyCode"
+                    name="verify_code"
                     :rules="[{ required: true, message: '请输入验证码' }]"
                   >
                     <a-input
-                      v-model:value="forgotForm.verifyCode"
+                      v-model:value="forgotForm.verify_code"
                       placeholder="验证码"
                       size="large"
                     />
@@ -262,7 +265,7 @@
                   <a-button
                     :loading="sendingCode"
                     :disabled="!canSendCode || countdown > 0"
-                    @click="sendVerifyCode"
+                    @click="sendverify_code"
                     block
                   >
                     {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
@@ -314,21 +317,21 @@ const showWechat = ref(false)
 const loginForm = reactive({
   identifier: '',
   credential: '',
-  verifyCodeLogin: false,
-  verifyCode: '',
+  verify_code_login: false,
+  verify_code: '',
 })
 
 const registerForm = reactive({
   identifier: '',
   credential: '',
   confirmPassword: '',
-  verifyCode: '',
+  verify_code: '',
 })
 
 const forgotForm = reactive({
   identifier: '',
   credential: '',
-  verifyCode: '',
+  verify_code: '',
 })
 
 // 状态
@@ -365,9 +368,9 @@ function switchView(view: 'login' | 'register' | 'forgot') {
   currentView.value = view
   showWechat.value = false
   // 清空表单
-  Object.assign(loginForm, { identifier: '', credential: '', verifyCodeLogin: false, verifyCode: '' })
-  Object.assign(registerForm, { identifier: '', credential: '', confirmPassword: '', verifyCode: '' })
-  Object.assign(forgotForm, { identifier: '', credential: '', verifyCode: '' })
+  Object.assign(loginForm, { identifier: '', credential: '', verify_code_login: false, verify_code: '' })
+  Object.assign(registerForm, { identifier: '', credential: '', confirmPassword: '', verify_code: '' })
+  Object.assign(forgotForm, { identifier: '', credential: '', verify_code: '' })
 }
 
 // 显示微信登录
@@ -399,7 +402,7 @@ watch(() => [loginForm.identifier, registerForm.identifier, forgotForm.identifie
 }, { immediate: true })
 
 // 发送验证码
-async function sendVerifyCode() {
+async function sendverify_code() {
   const identifier = loginForm.identifier || registerForm.identifier || forgotForm.identifier
   const identifierType = checkIdentifierFormat(identifier)
   
@@ -473,8 +476,8 @@ async function handleLogin() {
     const res = await request.post('/auth/login', {
       identifier: loginForm.identifier,
       credential: loginForm.credential,
-      verifyCodeLogin: loginForm.verifyCodeLogin,
-      verifyCode: loginForm.verifyCodeLogin ? loginForm.verifyCode : undefined,
+      verify_code_login: loginForm.verify_code_login,
+      verify_code: loginForm.verify_code_login ? loginForm.verify_code : undefined,
       identifierType,
     })
 
@@ -482,12 +485,12 @@ async function handleLogin() {
       const tokenData = res.data.data
       authStore.setLoginInfo({
         access_token: {
-          token: tokenData.accessToken.token,
-          expireAt: tokenData.accessToken.expireAt,
+          token: tokenData.access_token.token,
+          expire_at: tokenData.access_token.expire_at,
         },
         refresh_token: {
-          token: tokenData.refreshToken.token,
-          expireAt: tokenData.refreshToken.expireAt,
+          token: tokenData.refresh_token.token,
+          expire_at: tokenData.refresh_token.expire_at,
         },
       })
       message.success('登录成功')
@@ -510,7 +513,7 @@ async function handleRegister() {
     const res = await request.post('/auth/register', {
       identifier: registerForm.identifier,
       credential: registerForm.credential,
-      verifyCode: registerForm.verifyCode,
+      verify_code: registerForm.verify_code,
       identifierType,
     })
 
@@ -536,7 +539,7 @@ async function handleForgotPassword() {
     const res = await request.post('/auth/credential/reset', {
       identifier: forgotForm.identifier,
       credential: forgotForm.credential,
-      verifyCode: forgotForm.verifyCode,
+      verify_code: forgotForm.verify_code,
       identifierType,
     })
 
@@ -590,7 +593,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999;
+  z-index: 999;
   display: flex;
   justify-content: center;
   align-items: center;

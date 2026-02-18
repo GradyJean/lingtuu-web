@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import type { AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../stores/auth'
+import { getDeviceId } from './device'
 
 // 创建 axios 实例
 const request = axios.create({
@@ -17,6 +18,9 @@ let retryQueue: Array<() => void> = []
 request.interceptors.request.use(
   async (config) => {
     const authStore = useAuthStore()
+    
+    // 添加设备 ID
+    config.headers['X-Device-Id'] = getDeviceId()
     
     // 获取有效的 access_token（如果过期会自动刷新）
     const token = await authStore.getValidAccessToken()
