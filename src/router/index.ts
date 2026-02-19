@@ -28,6 +28,12 @@ const router = createRouter({
             component: () => import('../views/auth/wechat/WechatCallback.vue'),
             meta: {requiresAuth: false},
         },
+        {
+            path: '/profile',
+            name: 'profile',
+            component: () => import('../views/UserProfileView.vue'),
+            meta: {requiresAuth: true},
+        },
     ],
 })
 

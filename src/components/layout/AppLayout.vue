@@ -55,10 +55,10 @@
   height: 64px;
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
-  padding: 0 24px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 /* 主内容区域 */
