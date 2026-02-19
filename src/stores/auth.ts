@@ -27,11 +27,21 @@ export const useAuthStore = defineStore('auth', () => {
             const refreshTokenStr = localStorage.getItem('refresh_token')
 
             if (accessTokenStr) {
-                accessToken.value = JSON.parse(accessTokenStr)
+                const data = JSON.parse(accessTokenStr)
+                // 确保 expire_at 是毫秒级时间戳
+                accessToken.value = {
+                    token: data.token,
+                    expire_at: data.expire_at > 1e12 ? data.expire_at : data.expire_at * 1000,
+                }
             }
 
             if (refreshTokenStr) {
-                refreshToken.value = JSON.parse(refreshTokenStr)
+                const data = JSON.parse(refreshTokenStr)
+                // 确保 expire_at 是毫秒级时间戳
+                refreshToken.value = {
+                    token: data.token,
+                    expire_at: data.expire_at > 1e12 ? data.expire_at : data.expire_at * 1000,
+                }
             }
 
             // 启动定时检查
@@ -59,7 +69,9 @@ export const useAuthStore = defineStore('auth', () => {
      */
     function isTokenExpired(token: TokenInfo): boolean {
         // 提前 5 分钟判定为过期
-        return Date.now() >= token.expire_at - 5 * 60 * 1000
+        // expire_at 可能是秒级时间戳，需要转换为毫秒
+        const expireAt = token.expire_at > 1e12 ? token.expire_at : token.expire_at * 1000
+        return Date.now() >= expireAt - 5 * 60 * 1000
     }
 
     /**
@@ -69,13 +81,21 @@ export const useAuthStore = defineStore('auth', () => {
       access_token: { token: string; expire_at: number }
       refresh_token: { token: string; expire_at: number }
     }) {
+        // 确保 expire_at 是毫秒级时间戳
+        const accessExpireAt = data.access_token.expire_at > 1e12 
+            ? data.access_token.expire_at 
+            : data.access_token.expire_at * 1000
+        const refreshExpireAt = data.refresh_token.expire_at > 1e12 
+            ? data.refresh_token.expire_at 
+            : data.refresh_token.expire_at * 1000
+
         accessToken.value = {
             token: data.access_token.token,
-            expire_at: data.access_token.expire_at,
+            expire_at: accessExpireAt,
         }
         refreshToken.value = {
             token: data.refresh_token.token,
-            expire_at: data.refresh_token.expire_at,
+            expire_at: refreshExpireAt,
         }
         saveToStorage()
         startCheckTimer()
