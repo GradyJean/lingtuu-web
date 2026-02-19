@@ -23,8 +23,8 @@ request.interceptors.request.use(
     // 添加设备 ID
     config.headers['X-Device-Id'] = getDeviceId()
 
-    // 获取有效的 access_token（如果过期会自动刷新）
-    const token = await authStore.getValidAccessToken()
+    // 直接获取当前 token，不在这里刷新（刷新在响应拦截器中处理）
+    const token = authStore.accessToken?.token
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`

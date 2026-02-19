@@ -1,6 +1,6 @@
 import {ref, computed} from 'vue'
 import {defineStore} from 'pinia'
-import request from '../utils/request'
+import axios from 'axios'
 
 interface TokenInfo {
     token: string
@@ -112,22 +112,23 @@ export const useAuthStore = defineStore('auth', () => {
         }
 
         try {
-            const response = await request.post('/auth/token/refresh', {
+            // 使用 axios 直接请求，避免循环调用 request 拦截器
+            const response = await axios.post('/auth/token/refresh', {
                 token: refreshToken.value.token,
             })
 
             if (response.data.success) {
                 const tokenData = response.data.data
-                setLoginInfo({
-                  access_token: {
+                // 直接更新 token，不要调用 startCheckTimer()
+                accessToken.value = {
                     token: tokenData.access_token.token,
                     expire_at: tokenData.access_token.expire_at,
-                  },
-                  refresh_token: {
+                }
+                refreshToken.value = {
                     token: tokenData.refresh_token.token,
                     expire_at: tokenData.refresh_token.expire_at,
-                  },
-                })
+                }
+                saveToStorage()
                 return true
             } else {
                 clearAuth()
@@ -179,8 +180,8 @@ export const useAuthStore = defineStore('auth', () => {
      */
     async function logout() {
         try {
-            // 调用后端退出接口
-            await request.post('/auth/logout', {
+            // 使用 axios 直接请求，避免循环调用
+            await axios.post('/auth/logout', {
                 token: accessToken.value?.token,
             })
         } catch (error) {
