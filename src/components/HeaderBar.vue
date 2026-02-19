@@ -55,6 +55,7 @@ function handleMenuClick({ key }: { key: string }) {
   height: 100%;
   padding: 0 18px;
   width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .header-left {

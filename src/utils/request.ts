@@ -17,18 +17,19 @@ let retryQueue: Array<() => void> = []
 // 请求拦截器
 request.interceptors.request.use(
   async (config) => {
+    // 注意：这里不要调用 loadFromStorage()，只需要获取 store 实例即可
     const authStore = useAuthStore()
-    
+
     // 添加设备 ID
     config.headers['X-Device-Id'] = getDeviceId()
-    
+
     // 获取有效的 access_token（如果过期会自动刷新）
     const token = await authStore.getValidAccessToken()
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    
+
     return config
   },
   (error) => {

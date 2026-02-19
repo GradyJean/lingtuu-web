@@ -65,10 +65,8 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
-  min-height: 0;
-  display: flex;
-  justify-content: center;
+  width: 100%;
+  min-width: 0;
 }
 
 /* 底部 */

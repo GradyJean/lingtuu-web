@@ -23,7 +23,7 @@ function navigateTo(path: string) {
         <template #icon>
           <FileTextOutlined />
         </template>
-        Story
+        我的作品
       </a-menu-item>
     </a-menu>
   </div>
