@@ -1,12 +1,15 @@
 <script setup lang="ts">
-
 import AppLayout from "../components/layout/AppLayout.vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+const id = route.params.id as string | undefined;
 </script>
 
 <template>
   <AppLayout>
     <template #header>
-      1
+      {{ id ?? '未传入章节ID' }}
     </template>
     <template #left-sidebar>
       2
