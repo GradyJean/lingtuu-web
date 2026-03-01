@@ -30,7 +30,10 @@ function navigateTo(path: string) {
 </template>
 
 <style scoped>
-
+.left-menu-bar{
+  width: 100%;
+  min-height: 100%;
+}
 :deep(.ant-menu) {
   border-inline-end: none !important;
 }

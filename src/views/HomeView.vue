@@ -1,7 +1,7 @@
 <template>
   <BaseLayout>
     <template #header>
-      <HeaderBar/>
+      <Header/>
     </template>
     <template #left-side>
       <LeftMenuBar/>
@@ -10,7 +10,7 @@
       <RouterView/>
     </template>
     <template #footer>
-      <Bottom/>
+      <Footer/>
     </template>
   </BaseLayout>
 </template>
@@ -18,10 +18,10 @@
 <script setup lang="ts">
 
 
-import HeaderBar from "../components/HeaderBar.vue";
 import BaseLayout from "../components/layout/BaseLayout.vue";
-import Bottom from "../components/Bottom.vue";
+import Footer from "../components/Footer.vue";
 import LeftMenuBar from "../components/LeftMenuBar.vue";
+import Header from "../components/Header.vue";
 </script>
 
 <style scoped>
