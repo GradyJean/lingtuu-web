@@ -1,28 +1,36 @@
 <template>
   <a-config-provider :theme="themeMap[themeState.mode]">
-    <a-layout class="root">
+    <a-layout class="root"
+              :style="{
+      '--panel-bg': token.colorBgContainer,
+      '--panel-border': token.colorBorderSecondary,
+      '--panel-text': token.colorText,
+      '--panel-scrollbar': token.colorTextQuaternary,
+      '--panel-scrollbar-hover': token.colorTextTertiary
+    }"
+    >
       <!-- top -->
-      <a-layout-header class="top" :style="{ backgroundColor: token.colorBgLayout }">
+      <a-layout-header class="top">
         <slot name="top-side-bar"/>
       </a-layout-header>
 
-      <a-layout class="body" :style="{ backgroundColor: token.colorBgLayout }">
+      <a-layout class="body">
         <!-- left -->
-        <a-layout-sider class="left" :style="{ backgroundColor: token.colorBgLayout }">
+        <a-layout-sider class="left">
           <slot name="left-side-bar"/>
         </a-layout-sider>
         <!-- center -->
-        <a-layout-content class="center" :style="{ backgroundColor: token.colorBgContainer }">
+        <a-layout-content class="center">
           <slot name="ui-center"/>
         </a-layout-content>
         <!-- right -->
-        <a-layout-sider class="right" :style="{ backgroundColor: token.colorBgLayout }">
+        <a-layout-sider class="right">
           <slot name="right-side-bar"/>
         </a-layout-sider>
       </a-layout>
 
       <!-- bottom -->
-      <a-layout-footer class="bottom" :style="{ backgroundColor: token.colorBgLayout }"/>
+      <a-layout-footer class="bottom"/>
       <slot name="bottom-side-bar"/>
     </a-layout>
   </a-config-provider>
@@ -44,10 +52,14 @@ const {token} = theme.useToken()
 
 /* top bar */
 .top {
-  height: 35px;
-  line-height: 35px;
+  height: 70px;
+  line-height: 70px;
   display: flex;
   align-items: center;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 2px 2px rgba(120, 96, 72, 0.12);
 }
 
 /* bottom bar */

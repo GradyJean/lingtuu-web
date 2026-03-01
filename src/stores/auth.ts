@@ -12,8 +12,8 @@ export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref<TokenInfo | null>(null)
     const refreshToken = ref<TokenInfo | null>(null)
 
-    // 计算属性：是否已登录
-    const isLoggedIn = computed(() => !!accessToken.value && !isTokenExpired(accessToken.value))
+    // 计算属性：是否已登录（只按真实过期时间判断，不做提前量）
+    const isLoggedIn = computed(() => !!accessToken.value && !isTokenExpired(accessToken.value, 0))
 
     // 定时检查 token 过期的定时器
     let checkTimer: number | null = null
@@ -67,11 +67,10 @@ export const useAuthStore = defineStore('auth', () => {
     /**
      * 检查 token 是否过期
      */
-    function isTokenExpired(token: TokenInfo): boolean {
-        // 提前 5 分钟判定为过期
+    function isTokenExpired(token: TokenInfo, advanceMs = 5 * 60 * 1000): boolean {
         // expire_at 可能是秒级时间戳，需要转换为毫秒
         const expireAt = token.expire_at > 1e12 ? token.expire_at : token.expire_at * 1000
-        return Date.now() >= expireAt - 5 * 60 * 1000
+        return Date.now() >= expireAt - advanceMs
     }
 
     /**
@@ -133,7 +132,7 @@ export const useAuthStore = defineStore('auth', () => {
 
         try {
             // 使用 axios 直接请求，避免循环调用 request 拦截器
-            const response = await axios.post('/auth/token/refresh', {
+            const response = await axios.post('/lingtuu/auth/token/refresh', {
                 token: refreshToken.value.token,
             })
 
@@ -220,7 +219,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
 
         // token 未过期，直接返回
-        if (!isTokenExpired(accessToken.value)) {
+        if (!isTokenExpired(accessToken.value, 0)) {
             return accessToken.value.token
         }
 

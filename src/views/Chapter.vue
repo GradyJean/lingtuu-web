@@ -36,12 +36,11 @@ function menuClick(iconKey: string, isActive: boolean): void {
     </template>
     <template #ui-center>
       <WorkContainer>
-        <template #left> left</template>
+        <template #left style="background: white;"> left</template>
         <template #center> center</template>
         <template #right>
           <Dashboard v-if="uiStore.menuState.database"/>
         </template>
-        <template #bottom> bottom</template>
       </WorkContainer>
     </template>
   </BaseContainer>

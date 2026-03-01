@@ -18,7 +18,7 @@ export const themeMap: Record<ThemeKey, unknown> = {
       colorTextDisabled: 'rgba(255, 255, 255, 0.34)',
 
       /* ===== 边框（只做结构，不提亮）===== */
-      colorBorderSecondary: 'rgba(255, 255, 255, 0.10)',
+      colorBorderSecondary: 'rgba(255, 255, 255, 0.02)',
 
       /* ===== hover / active（在深底上提亮）===== */
       colorBgTextHover: 'rgba(255, 255, 255, 0.10)',
@@ -30,8 +30,8 @@ export const themeMap: Record<ThemeKey, unknown> = {
     algorithm: antdTheme.defaultAlgorithm,
     token: {
       /* ===== Layout / 背景层级 ===== */
-      colorBgLayout: '#f5f6f8',
-      colorBgContainer: '#e6e8ec',
+      colorBgLayout: '#FFFFFF',
+      colorBgContainer: '#F5F6F8FF',
 
       /* ===== 文本 / 图标 ===== */
       colorText: 'rgba(0, 0, 0, 0.88)',
@@ -41,7 +41,7 @@ export const themeMap: Record<ThemeKey, unknown> = {
       colorTextDisabled: 'rgba(0, 0, 0, 0.36)',
 
       /* ===== 边框（弱分割）===== */
-      colorBorderSecondary: 'rgba(0, 0, 0, 0.10)',
+      colorBorderSecondary: 'rgba(0, 0, 0, 0.02)',
 
       /* ===== hover / active ===== */
       colorBgTextHover: 'rgba(0, 0, 0, 0.045)',

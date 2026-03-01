@@ -295,9 +295,9 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import { UserOutlined, LockOutlined, WechatOutlined, AlipayOutlined } from '@ant-design/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import request from '../utils/request'
-import WechatLogin from './auth/wechat/WechatLogin.vue'
+import { useAuthStore } from '../../stores/auth.ts'
+import request from '../../utils/request.ts'
+import WechatLogin from './wechat/WechatLogin.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -480,7 +480,6 @@ async function handleLogin() {
       verify_code: loginForm.verify_code_login ? loginForm.verify_code : undefined,
       identifierType,
     })
-
     if (res.data.success) {
       const tokenData = res.data.data
       authStore.setLoginInfo({

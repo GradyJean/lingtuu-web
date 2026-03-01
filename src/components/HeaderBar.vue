@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons-vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import {UserOutlined, LogoutOutlined} from '@ant-design/icons-vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from '../stores/auth'
+import {theme} from 'ant-design-vue'
 
+const {token} = theme.useToken()
 const router = useRouter()
 const authStore = useAuthStore()
 
-function handleMenuClick({ key }: { key: string }) {
+function handleMenuClick({key}: { key: string }) {
   if (key === 'profile') {
     router.push('/profile')
   } else if (key === 'logout') {
@@ -17,26 +19,28 @@ function handleMenuClick({ key }: { key: string }) {
 </script>
 
 <template>
-  <div class="header-bar">
+  <div class="header-bar" :style="{
+      '--header-hover': token.colorBorderSecondary,
+    }">
     <div class="header-left">
       <!-- 预留位置 -->
     </div>
     <div class="header-right">
       <a-dropdown>
         <span class="user-dropdown">
-          <UserOutlined style="font-size: 18px;" />
+          <UserOutlined style="font-size: 18px;"/>
         </span>
         <template #overlay>
           <a-menu @click="handleMenuClick">
             <a-menu-item key="profile">
               <template #icon>
-                <UserOutlined />
+                <UserOutlined/>
               </template>
               个人中心
             </a-menu-item>
             <a-menu-item key="logout">
               <template #icon>
-                <LogoutOutlined />
+                <LogoutOutlined/>
               </template>
               退出登录
             </a-menu-item>
@@ -55,7 +59,6 @@ function handleMenuClick({ key }: { key: string }) {
   height: 100%;
   padding: 0 18px;
   width: 100%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .header-left {
@@ -78,7 +81,8 @@ function handleMenuClick({ key }: { key: string }) {
   transition: background-color 0.3s;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .user-dropdown:hover {
-  background-color: #f5f5f5;
+  background-color: var(--header-hover);
 }
 </style>
