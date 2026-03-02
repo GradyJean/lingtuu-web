@@ -30,7 +30,7 @@ export const themeMap: Record<ThemeKey, unknown> = {
     algorithm: antdTheme.defaultAlgorithm,
     token: {
       /* ===== Layout / 背景层级 ===== */
-      colorBgLayout: '#fbfbfb',
+      colorBgLayout: 'linear-gradient(180deg, #fdf8f2 0%, #fffdf9 100%)',
       colorBgContainer: '#FFFFFF',
 
       /* ===== 文本 / 图标 ===== */

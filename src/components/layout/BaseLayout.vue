@@ -41,6 +41,13 @@ const {token} = theme.useToken()
 </script>
 
 <style scoped>
+:deep(.ant-layout-header),
+:deep(.ant-layout-sider),
+:deep(.ant-layout-content),
+:deep(.ant-layout-footer),
+:deep(.main) {
+  background: transparent !important;
+}
 .root {
   width: 100vw;
   height: 100vh;
