@@ -34,7 +34,7 @@ const { token } = theme.useToken()
   overflow: hidden;
 
   /* noinspection CssUnresolvedCustomProperty */
-  box-shadow: inset 0 0 0 1px var(--panel-border);
+  box-shadow: 0 0 10px 2px var(--panel-border);
   /* noinspection CssUnresolvedCustomProperty */
   color: var(--panel-text);
 }

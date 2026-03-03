@@ -97,7 +97,6 @@ const {token} = theme.useToken()
 .center {
   padding: 0 10px 0 5px;
   margin: 0;
-  overflow: auto;
   /* noinspection CssUnresolvedCustomProperty */
   background: var(--layout-bg);
 }
