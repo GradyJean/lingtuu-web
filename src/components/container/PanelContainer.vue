@@ -42,12 +42,7 @@ const { token } = theme.useToken()
 .panel-viewport {
   width: 100%;
   height: 100%;
-
-  padding: 5px;
   box-sizing: border-box;
-
-  overflow: auto;
-  scrollbar-gutter: stable both-edges;
 }
 </style>
 

@@ -37,8 +37,4 @@ function navigateTo(path: string) {
 :deep(.ant-menu) {
   border-inline-end: none !important;
 }
-
-:deep(.ant-menu-item) {
-  margin-inline: 0;
-}
 </style>

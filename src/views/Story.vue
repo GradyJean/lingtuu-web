@@ -1,8 +1,21 @@
 <template>
-  <div class="story-page">
+  <div
+      class="story-page"
+      :style="{
+      '--story-bg': token.colorBgLayout,
+      '--story-panel-bg': token.colorBgContainer,
+      '--story-text': token.colorText,
+      '--story-text-secondary': token.colorTextSecondary,
+      '--story-border': token.colorBorderSecondary,
+      '--story-hover-bg': token.colorBgTextHover,
+      '--story-primary': token.colorPrimary,
+      '--story-primary-hover': token.colorPrimaryHover,
+      '--story-warning': token.colorWarning
+    }"
+  >
     <!-- 顶部区域 -->
     <div class="story-header">
-      <div class="header-left">
+      <div>
         <h1 class="page-title">我的作品</h1>
       </div>
       <div class="header-right">
@@ -34,12 +47,12 @@
         <a-input-search
             v-model:value="searchTitle"
             placeholder="搜索作品标题"
-            style="width: 200px; margin-right: 12px;"
+            class="search-input"
             @search="handleSearch"
             @pressEnter="handleSearch"
         />
         <a-dropdown>
-          <a-button type="primary" class="btn-create">
+          <a-button type="primary" class="btn-primary">
             <PlusOutlined/>
             创建作品
             <DownOutlined/>
@@ -55,11 +68,11 @@
             </a-menu>
           </template>
         </a-dropdown>
-        <a-button class="btn-action">
+        <a-button type="primary" class="btn-primary">
           <BookOutlined/>
           拆书
         </a-button>
-        <a-button class="btn-action">
+        <a-button type="primary" class="btn-primary">
           <PlusOutlined/>
           导入
         </a-button>
@@ -78,14 +91,14 @@
     <div class="story-list">
       <div v-for="story in storyList" :key="story.id" class="story-card" @click="handleCardClick(story.id)">
         <div class="card-header">
-          <span class="card-type-tag">{{ StoryType[story.type as keyof typeof StoryType] || story.type }}</span>
+          <span class="card-tag card-tag--type">{{ StoryType[story.type as keyof typeof StoryType] || story.type }}</span>
           <span class="card-title">{{ story.title }}</span>
         </div>
         <div class="card-body">
           <!-- 内容区域 -->
         </div>
         <div class="card-footer">
-          <span class="card-status-tag">{{
+          <span class="card-tag card-tag--status">{{
               StoryStatus[story.status as keyof typeof StoryStatus] || story.status
             }}</span>
           <span class="card-date">{{ formatDate(story.created_at) }}</span>
@@ -153,6 +166,7 @@
 
 <script setup lang="ts">
 import {ref, onMounted} from 'vue'
+import {theme} from 'ant-design-vue'
 import {
   PlusOutlined,
   BookOutlined,
@@ -163,6 +177,8 @@ import {
 } from '@ant-design/icons-vue'
 import {getStoryList, type StoryItem, deleteStory, createStory} from '../api/story'
 import router from "../router";
+
+const {token} = theme.useToken()
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
@@ -283,24 +299,30 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* noinspection CssUnresolvedCustomProperty */
 .story-page {
   padding: 24px;
   min-height: 100%;
-  background: white;
+  background: var(--story-bg);
 }
 
 /* 顶部标题区域 */
-.story-header {
+.story-header,
+.story-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.story-header {
   margin-bottom: 24px;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .page-title {
   font-size: 24px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--story-text);
   margin: 0;
 }
 
@@ -310,12 +332,10 @@ onMounted(() => {
 }
 
 /* 工具栏：分类 + 按钮 */
+/* noinspection CssUnresolvedCustomProperty */
 .story-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--story-border);
   margin-bottom: 24px;
 }
 
@@ -324,23 +344,23 @@ onMounted(() => {
   gap: 32px;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .tab {
   font-size: 16px;
-  color: #333;
+  color: var(--story-text-secondary);
   cursor: pointer;
   padding: 8px 0;
   position: relative;
   transition: color 0.3s;
 }
 
-.tab:hover {
-  color: #52c41a;
-}
-
+/* noinspection CssUnresolvedCustomProperty */
+.tab:hover,
 .tab.active {
-  color: #52c41a;
+  color: var(--story-primary);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .tab.active::after {
   content: '';
   position: absolute;
@@ -348,7 +368,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: #52c41a;
+  background: var(--story-primary);
   border-radius: 2px 2px 0 0;
 }
 
@@ -358,15 +378,21 @@ onMounted(() => {
   gap: 12px;
 }
 
-.btn-create {
-  background: linear-gradient(135deg, #52c41a 0%, #95de64 100%);
-  border: none;
+.search-input {
+  width: 200px;
 }
 
-.btn-action {
-  background: linear-gradient(135deg, #52c41a 0%, #95de64 100%);
+/* noinspection CssUnresolvedCustomProperty */
+.btn-primary {
+  background: var(--story-primary);
   color: #fff;
-  border: none;
+  border-color: var(--story-primary);
+}
+
+/* noinspection CssUnresolvedCustomProperty */
+.btn-primary:hover {
+  background: var(--story-primary-hover) !important;
+  border-color: var(--story-primary-hover) !important;
 }
 
 .view-toggle :deep(.ant-btn) {
@@ -381,85 +407,79 @@ onMounted(() => {
   margin-bottom: 24px;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .story-card {
-  background: #fff;
+  background: var(--story-panel-bg);
   border-radius: 12px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--story-border);
   overflow: hidden;
   transition: box-shadow 0.3s, transform 0.3s;
   cursor: pointer;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .story-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--story-border);
   transform: translateY(-2px);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .card-header {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--story-border);
 }
 
-.card-status-tag {
-  background: #52c41a;
+.card-tag {
   color: #fff;
   font-size: 12px;
   padding: 2px 3px;
   border-radius: 4px;
 }
 
-.card-type-tag {
-  background: orange;
-  color: #fff;
-  font-size: 12px;
-  padding: 2px 3px;
-  border-radius: 4px;
+/* noinspection CssUnresolvedCustomProperty */
+.card-tag--status {
+  background: var(--story-primary);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
+.card-tag--type {
+  background: var(--story-warning);
+}
+
+/* noinspection CssUnresolvedCustomProperty */
 .card-title {
   font-size: 14px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: var(--story-text);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .card-body {
   height: 160px;
-  background: #fafafa;
+  background: var(--story-hover-bg);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--story-border);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .card-date {
   font-size: 12px;
-  color: gray;
+  color: var(--story-text-secondary);
 }
 
 .card-actions {
   display: flex;
   gap: 8px;
-}
-
-.btn-more {
-  padding: 4px 8px;
-}
-
-:deep(.ant-btn-dangerous) {
-  color: #ff4d4f;
-  border-color: #ff4d4f;
-}
-
-:deep(.ant-btn-dangerous:hover) {
-  color: #fff;
-  background: #ff4d4f;
 }
 
 /* 分页 */
