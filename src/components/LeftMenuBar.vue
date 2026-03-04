@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {useRouter, useRoute} from 'vue-router'
-import { HomeOutlined, FileTextOutlined } from '@ant-design/icons-vue'
+import {HomeOutlined, FileTextOutlined} from '@ant-design/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -15,13 +15,13 @@ function navigateTo(path: string) {
     <a-menu mode="inline" :selected-keys="[route.path]">
       <a-menu-item key="/" @click="navigateTo('/')">
         <template #icon>
-          <HomeOutlined />
+          <HomeOutlined/>
         </template>
         首页
       </a-menu-item>
       <a-menu-item key="/story" @click="navigateTo('/story')">
         <template #icon>
-          <FileTextOutlined />
+          <FileTextOutlined/>
         </template>
         我的作品
       </a-menu-item>
@@ -30,10 +30,10 @@ function navigateTo(path: string) {
 </template>
 
 <style scoped>
-.left-menu-bar {
-  padding: 16px 0;
+.left-menu-bar{
+  width: 100%;
+  min-height: 100%;
 }
-
 :deep(.ant-menu) {
   border-inline-end: none !important;
 }

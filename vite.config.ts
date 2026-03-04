@@ -5,9 +5,10 @@ export default defineConfig({
     plugins: [vue()],
     server: {
         port: 3000,
+        host: '127.0.0.1',
         proxy: {
             '/lingtuu': {
-                target: 'http://127.0.0.1:8080',
+                target: 'https://www.qmvector.com',
                 changeOrigin: true,
                 secure: false
             }

@@ -76,7 +76,7 @@
 
     <!-- 作品列表 -->
     <div class="story-list">
-      <div v-for="story in storyList" :key="story.id" class="story-card">
+      <div v-for="story in storyList" :key="story.id" class="story-card" @click="handleCardClick(story.id)">
         <div class="card-header">
           <span class="card-type-tag">{{ StoryType[story.type as keyof typeof StoryType] || story.type }}</span>
           <span class="card-title">{{ story.title }}</span>
@@ -85,7 +85,9 @@
           <!-- 内容区域 -->
         </div>
         <div class="card-footer">
-          <span class="card-status-tag">{{ StoryStatus[story.status as keyof typeof StoryStatus] || story.status }}</span>
+          <span class="card-status-tag">{{
+              StoryStatus[story.status as keyof typeof StoryStatus] || story.status
+            }}</span>
           <span class="card-date">{{ formatDate(story.created_at) }}</span>
           <div class="card-actions">
             <a-popconfirm
@@ -160,6 +162,7 @@ import {
   DeleteOutlined,
 } from '@ant-design/icons-vue'
 import {getStoryList, type StoryItem, deleteStory, createStory} from '../api/story'
+import router from "../router";
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
@@ -201,6 +204,10 @@ const createForm = ref({
   perspective: 'THIRD' as 'FIRST' | 'THIRD',
   target_reader: 'ALL' as 'FEMALE' | 'MALE' | 'ALL',
 })
+
+function handleCardClick(id: string) {
+  router.push({name: 'chapter', params: {id}})
+}
 
 function openCreateModal(type: 'SHORT' | 'LONG' | 'SCRIPT' | 'VIDEO') {
   createForm.value = {
@@ -380,6 +387,7 @@ onMounted(() => {
   border: 1px solid #f0f0f0;
   overflow: hidden;
   transition: box-shadow 0.3s, transform 0.3s;
+  cursor: pointer;
 }
 
 .story-card:hover {

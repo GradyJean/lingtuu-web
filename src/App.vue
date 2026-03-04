@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import LoginModal from './components/LoginModal.vue'
+import LoginModal from './components/auth/LoginModal.vue'
+import {themeMap} from "./theme/theme.ts";
+import {themeState} from "./theme";
 </script>
 
 <template>
-  <LoginModal />
+  <LoginModal/>
   <main>
-    <router-view />
+    <a-config-provider :theme="themeMap[themeState.mode]">
+      <router-view/>
+    </a-config-provider>
   </main>
 </template>
 

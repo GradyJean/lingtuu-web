@@ -1,26 +1,27 @@
 <template>
-  <AppLayout>
+  <BaseLayout>
     <template #header>
-      <HeaderBar/>
+      <Header/>
     </template>
-    <template #main>
-      <router-view/>
-    </template>
-    <template #left-sidebar>
+    <template #left-side>
       <LeftMenuBar/>
     </template>
-    <template #footer>
-      <Bottom/>
+    <template #main>
+      <RouterView/>
     </template>
-  </AppLayout>
+    <template #footer>
+      <Footer/>
+    </template>
+  </BaseLayout>
 </template>
 
 <script setup lang="ts">
 
-import AppLayout from "../components/layout/AppLayout.vue";
+
+import BaseLayout from "../components/layout/BaseLayout.vue";
+import Footer from "../components/Footer.vue";
 import LeftMenuBar from "../components/LeftMenuBar.vue";
-import Bottom from "../components/Bottom.vue";
-import HeaderBar from "../components/HeaderBar.vue";
+import Header from "../components/Header.vue";
 </script>
 
 <style scoped>
