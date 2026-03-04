@@ -2,8 +2,7 @@
   <div
       class="story-page"
       :style="{
-      '--story-bg': token.colorBgLayout,
-      '--story-panel-bg': token.colorBgContainer,
+      '--story-panel-bg': token.colorBgLayout,
       '--story-text': token.colorText,
       '--story-text-secondary': token.colorTextSecondary,
       '--story-border': token.colorBorderSecondary,
@@ -91,7 +90,9 @@
     <div class="story-list">
       <div v-for="story in storyList" :key="story.id" class="story-card" @click="handleCardClick(story.id)">
         <div class="card-header">
-          <span class="card-tag card-tag--type">{{ StoryType[story.type as keyof typeof StoryType] || story.type }}</span>
+          <span class="card-tag card-tag--type">{{
+              StoryType[story.type as keyof typeof StoryType] || story.type
+            }}</span>
           <span class="card-title">{{ story.title }}</span>
         </div>
         <div class="card-body">
@@ -299,11 +300,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* noinspection CssUnresolvedCustomProperty */
 .story-page {
   padding: 24px;
   min-height: 100%;
-  background: var(--story-bg);
 }
 
 /* 顶部标题区域 */
