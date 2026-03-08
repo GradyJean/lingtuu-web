@@ -6,11 +6,12 @@ import MenuItem from '../components/menu/MenuItem.vue'
 import WorkspaceLayout from "../components/layout/WorkspaceLayout.vue";
 import Header from "../components/Header.vue";
 import Footer from "../components/Footer.vue";
+import TiptapEditor from "../components/editor/TiptapEditor.vue";
 
 const uiStore = uiStateStore()
 
 function menuClick(iconKey: string, isActive: boolean): void {
-  let windowPosition: 'left' | 'right'  = 'left'
+  let windowPosition: 'left' | 'right' = 'left'
   switch (iconKey) {
     case 'project':
       windowPosition = 'left'
@@ -43,7 +44,9 @@ function menuClick(iconKey: string, isActive: boolean): void {
     <template #main>
       <WorkContainer>
         <template #left> left</template>
-        <template #center> center</template>
+        <template #center>
+          <TiptapEditor/>
+        </template>
         <template #right>
           right
         </template>
