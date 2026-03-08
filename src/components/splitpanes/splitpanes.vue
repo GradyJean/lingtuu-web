@@ -685,11 +685,11 @@ provide('onPaneClick', onPaneClick)
 
 .default-theme {
   &.splitpanes .splitpanes__pane {
-    background-color: #f2f2f2;
+    background-color: var(--splitpanes-pane-bg, #f2f2f2);
   }
 
   &.splitpanes .splitpanes__splitter {
-    background-color: #fff;
+    background-color: var(--splitpanes-splitter-bg, #fff);
     box-sizing: border-box;
     position: relative;
     flex-shrink: 0;
@@ -700,12 +700,12 @@ provide('onPaneClick', onPaneClick)
       position: absolute;
       top: 50%;
       left: 50%;
-      background-color: rgba(0, 0, 0, 0.15);
+      background-color: var(--splitpanes-splitter-line, rgba(0, 0, 0, 0.15));
       transition: background-color 0.3s;
     }
     &:hover:before,
     &:hover:after {
-      background-color: rgba(0, 0, 0, 0.25);
+      background-color: var(--splitpanes-splitter-line-hover, rgba(0, 0, 0, 0.25));
     }
     &:first-child {
       cursor: auto;
@@ -718,7 +718,7 @@ provide('onPaneClick', onPaneClick)
   &.splitpanes--vertical > .splitpanes__splitter,
   .splitpanes--vertical > .splitpanes__splitter {
     width: 7px;
-    border-left: 1px solid #eee;
+    border-left: 1px solid var(--splitpanes-splitter-border, #eee);
     margin-left: -1px;
 
     &:before,
@@ -738,7 +738,7 @@ provide('onPaneClick', onPaneClick)
   &.splitpanes--horizontal > .splitpanes__splitter,
   .splitpanes--horizontal > .splitpanes__splitter {
     height: 7px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--splitpanes-splitter-border, #eee);
     margin-top: -1px;
 
     &:before,

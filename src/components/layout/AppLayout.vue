@@ -1,5 +1,12 @@
 <template>
-  <div class="app-layout">
+  <div
+      class="app-layout"
+      :style="{
+      '--layout-bg': token.colorBgLayout,
+      '--layout-panel-bg': token.colorBgContainer,
+      '--layout-border': token.colorBorderSecondary
+    }"
+  >
     <!-- 顶部 Header (全宽) -->
     <header class="top-header">
       <slot name="header"/>
@@ -25,20 +32,28 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import {theme} from 'ant-design-vue'
+
+const {token} = theme.useToken()
+</script>
+
 <style scoped>
+/* noinspection CssUnresolvedCustomProperty */
 .app-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f5f7fa;
+  background: var(--layout-bg);
   overflow: hidden;
 }
 
 /* 顶部 Header */
+/* noinspection CssUnresolvedCustomProperty */
 .top-header {
   height: 64px;
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  background: var(--layout-panel-bg);
+  border-bottom: 1px solid var(--layout-border);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -53,10 +68,11 @@
 }
 
 /* 左侧边栏 */
+/* noinspection CssUnresolvedCustomProperty */
 .left-sidebar {
   width: 260px;
-  background: #fff;
-  border-right: 1px solid #f0f0f0;
+  background: var(--layout-panel-bg);
+  border-right: 1px solid var(--layout-border);
   overflow-y: auto;
   flex-shrink: 0;
   display: flex;
@@ -72,10 +88,11 @@
 }
 
 /* 底部 Footer */
+/* noinspection CssUnresolvedCustomProperty */
 .bottom-footer {
   height: 48px;
-  background: #fff;
-  border-top: 1px solid #f0f0f0;
+  background: var(--layout-panel-bg);
+  border-top: 1px solid var(--layout-border);
   padding: 0 24px;
   flex-shrink: 0;
   display: flex;

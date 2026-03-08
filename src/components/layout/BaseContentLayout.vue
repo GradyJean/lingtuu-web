@@ -6,7 +6,8 @@
       '--panel-border': token.colorBorderSecondary,
       '--panel-text': token.colorText,
       '--panel-scrollbar': token.colorTextQuaternary,
-      '--panel-scrollbar-hover': token.colorTextTertiary
+      '--panel-scrollbar-hover': token.colorTextTertiary,
+      '--panel-shadow': token.boxShadowSecondary
     }"
     >
       <!-- top -->
@@ -51,6 +52,7 @@ const {token} = theme.useToken()
 }
 
 /* top bar */
+/* noinspection CssUnresolvedCustomProperty */
 .top {
   height: 70px;
   line-height: 70px;
@@ -59,7 +61,7 @@ const {token} = theme.useToken()
   padding: 0;
   position: relative;
   z-index: 10;
-  box-shadow: 0 2px 2px rgba(120, 96, 72, 0.12);
+  box-shadow: var(--panel-shadow);
 }
 
 /* bottom bar */

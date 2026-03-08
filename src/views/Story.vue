@@ -2,14 +2,15 @@
   <div
       class="story-page"
       :style="{
-      '--story-panel-bg': token.colorBgLayout,
+      '--story-panel-bg': token.colorBgContainer,
       '--story-text': token.colorText,
       '--story-text-secondary': token.colorTextSecondary,
       '--story-border': token.colorBorderSecondary,
       '--story-hover-bg': token.colorBgTextHover,
       '--story-primary': token.colorPrimary,
       '--story-primary-hover': token.colorPrimaryHover,
-      '--story-warning': token.colorWarning
+      '--story-warning': token.colorWarning,
+      '--story-on-primary': token.colorTextLightSolid
     }"
   >
     <!-- 顶部区域 -->
@@ -384,7 +385,7 @@ onMounted(() => {
 /* noinspection CssUnresolvedCustomProperty */
 .btn-primary {
   background: var(--story-primary);
-  color: #fff;
+  color: var(--story-on-primary);
   border-color: var(--story-primary);
 }
 
@@ -430,9 +431,9 @@ onMounted(() => {
   padding: 16px;
   border-bottom: 1px solid var(--story-border);
 }
-
+/* noinspection CssUnresolvedCustomProperty */
 .card-tag {
-  color: #fff;
+  color: var(--story-on-primary);
   font-size: 12px;
   padding: 2px 3px;
   border-radius: 4px;

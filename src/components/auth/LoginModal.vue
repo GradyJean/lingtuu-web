@@ -1,5 +1,13 @@
 <template>
-  <div v-if="shouldShowLogin" class="login-modal">
+  <div
+    v-if="shouldShowLogin"
+    class="login-modal"
+    :style="{
+      '--login-mask': token.colorBgMask,
+      '--login-text-secondary': token.colorTextSecondary,
+      '--login-link': token.colorPrimary
+    }"
+  >
     <div class="modal-mask"></div>
     <div class="modal-container">
       <a-card :title="cardTitle" :bordered="false" style="width: 400px">
@@ -292,7 +300,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { message } from 'ant-design-vue'
+import { message, theme } from 'ant-design-vue'
 import { UserOutlined, LockOutlined, WechatOutlined, AlipayOutlined } from '@ant-design/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth.ts'
@@ -302,6 +310,7 @@ import WechatLogin from './wechat/WechatLogin.vue'
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const { token } = theme.useToken()
 
 // 判断是否显示登录框：未登录 且 当前路由需要认证
 const shouldShowLogin = computed(() => {
@@ -586,6 +595,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* noinspection CssUnresolvedCustomProperty */
 .login-modal {
   position: fixed;
   top: 0;
@@ -598,13 +608,14 @@ onMounted(() => {
   align-items: center;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .modal-mask {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--login-mask);
   backdrop-filter: blur(4px);
 }
 
@@ -621,10 +632,11 @@ onMounted(() => {
   float: right;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .form-footer {
   text-align: center;
   margin-top: 16px;
-  color: #666;
+  color: var(--login-text-secondary);
 }
 
 .form-footer a {
@@ -648,18 +660,21 @@ onMounted(() => {
   cursor: pointer;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .third-icon {
-  color: #666;
+  color: var(--login-text-secondary);
   transition: color 0.3s;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .third-icon:hover {
-  color: #1890ff;
+  color: var(--login-link);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .platform-name {
   margin-top: 8px;
   font-size: 12px;
-  color: #666;
+  color: var(--login-text-secondary);
 }
 </style>

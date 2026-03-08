@@ -1,5 +1,12 @@
 <template>
-  <div class="wechat-login">
+  <div
+    class="wechat-login"
+    :style="{
+      '--wechat-text-secondary': token.colorTextSecondary,
+      '--wechat-text-tertiary': token.colorTextTertiary,
+      '--wechat-link': token.colorPrimary
+    }"
+  >
     <div class="qr-header">
       <ArrowLeftOutlined class="back-icon" @click="$emit('back')" />
       <span>微信扫码登录</span>
@@ -16,6 +23,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { theme } from 'ant-design-vue'
 import { ArrowLeftOutlined } from '@ant-design/icons-vue'
 import { useAuthStore } from '../../../stores/auth'
 import request from '../../../utils/request'
@@ -24,6 +32,7 @@ import { getDeviceId } from '../../../utils/device'
 defineEmits(['back'])
 
 const authStore = useAuthStore()
+const { token } = theme.useToken()
 const loading = ref(true)
 const wechatConfig = ref<{ appId?: string; scope?: string }>({})
 let pollTimer: number | null = null
@@ -150,6 +159,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* noinspection CssUnresolvedCustomProperty */
 .wechat-login {
   padding: 20px 0;
   text-align: center;
@@ -166,17 +176,19 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .back-icon {
   position: absolute;
   left: 0;
   cursor: pointer;
   font-size: 18px;
-  color: #666;
+  color: var(--wechat-text-secondary);
   transition: color 0.3s;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .back-icon:hover {
-  color: #1890ff;
+  color: var(--wechat-link);
 }
 
 .qr-container {
@@ -191,13 +203,15 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .qr-loading p {
   margin-top: 16px;
-  color: #666;
+  color: var(--wechat-text-secondary);
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .qr-hint {
-  color: #999;
+  color: var(--wechat-text-tertiary);
   font-size: 14px;
 }
 </style>

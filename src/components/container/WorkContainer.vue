@@ -62,7 +62,11 @@ function onMainResize(e: { panes: any }): void {
   <div
       class="workspace-root"
       :style="{
-      '--Splitpanes-color': token.colorBgLayout
+      '--splitpanes-pane-bg': token.colorBgContainer,
+      '--splitpanes-splitter-bg': token.colorBgLayout,
+      '--splitpanes-splitter-line': token.colorTextQuaternary,
+      '--splitpanes-splitter-line-hover': token.colorTextSecondary,
+      '--splitpanes-splitter-border': token.colorBorderSecondary
     }"
   >
     <!-- 整体：上下 -->
@@ -120,23 +124,39 @@ function onMainResize(e: { panes: any }): void {
 <style>
 /* noinspection CssUnresolvedCustomProperty */
 .splitpanes .splitpanes__pane {
-  background-color: var(--Splitpanes-color);
+  background-color: var(--splitpanes-pane-bg);
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .splitpanes__splitter {
-  background-color: var(--Splitpanes-color);
+  background-color: var(--splitpanes-splitter-bg);
+}
+
+/* noinspection CssUnresolvedCustomProperty */
+.splitpanes__splitter::before,
+.splitpanes__splitter::after {
+  background-color: var(--splitpanes-splitter-line);
+}
+
+/* noinspection CssUnresolvedCustomProperty */
+.splitpanes__splitter:hover::before,
+.splitpanes__splitter:hover::after {
+  background-color: var(--splitpanes-splitter-line-hover);
 }
 
 /* 左右分隔（竖向） */
+/* noinspection CssUnresolvedCustomProperty */
 .splitpanes--vertical > .splitpanes__splitter {
   width: 5px;
+  border-left: 1px solid var(--splitpanes-splitter-border);
   cursor: ew-resize;
 }
 
 /* 上下分隔（横向） */
+/* noinspection CssUnresolvedCustomProperty */
 .splitpanes--horizontal > .splitpanes__splitter {
   height: 5px;
+  border-top: 1px solid var(--splitpanes-splitter-border);
   cursor: ns-resize;
 }
 </style>
