@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import BaseContainer from '../components/container/BaseContainer.vue'
 import WorkContainer from '../components/container/WorkContainer.vue'
 import {uiStateStore} from '../stores/ui'
 import MenuBar from '../components/menu/MenuBar.vue'
 import MenuItem from '../components/menu/MenuItem.vue'
-import Dashboard from "./Dashboard.vue";
+import WorkspaceLayout from "../components/layout/WorkspaceLayout.vue";
+import Header from "../components/Header.vue";
+import Footer from "../components/Footer.vue";
 
 const uiStore = uiStateStore()
 
@@ -22,7 +23,13 @@ function menuClick(iconKey: string, isActive: boolean): void {
 </script>
 
 <template>
-  <BaseContainer>
+  <WorkspaceLayout>
+    <template #header>
+      <Header/>
+    </template>
+    <template #footer>
+      <Footer/>
+    </template>
     <template #left-side-bar>
       <MenuBar>
         <MenuItem name="folder" menu-key="project" @click="menuClick"/>
@@ -39,11 +46,11 @@ function menuClick(iconKey: string, isActive: boolean): void {
         <template #left style="background: white;"> left</template>
         <template #center> center</template>
         <template #right>
-          <Dashboard v-if="uiStore.menuState.database"/>
+          right
         </template>
       </WorkContainer>
     </template>
-  </BaseContainer>
+  </WorkspaceLayout>
 </template>
 
 <style scoped></style>

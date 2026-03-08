@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { theme } from 'ant-design-vue'
+import {theme} from 'ant-design-vue'
 
-const { token } = theme.useToken()
+const {token} = theme.useToken()
 </script>
 
 <template>
   <div
-    class="panel-container"
-    :style="{
+      class="panel-container"
+      :style="{
       '--panel-bg': token.colorBgContainer,
       '--panel-border': token.colorBorderSecondary,
       '--panel-text': token.colorText,
@@ -16,7 +16,7 @@ const { token } = theme.useToken()
     }"
   >
     <div class="panel-viewport">
-      <slot />
+      <slot/>
     </div>
   </div>
 </template>
@@ -34,7 +34,7 @@ const { token } = theme.useToken()
   overflow: hidden;
 
   /* noinspection CssUnresolvedCustomProperty */
-  box-shadow: 0 0 10px 2px var(--panel-border);
+  border: var(--panel-border) solid 1px;
   /* noinspection CssUnresolvedCustomProperty */
   color: var(--panel-text);
 }
@@ -55,11 +55,13 @@ const { token } = theme.useToken()
 .panel-viewport::-webkit-scrollbar-track {
   background: transparent;
 }
+
 /* noinspection CssUnresolvedCustomProperty */
 .panel-viewport::-webkit-scrollbar-thumb {
   background-color: var(--panel-scrollbar);
   border-radius: 5px;
 }
+
 /* noinspection CssUnresolvedCustomProperty */
 .panel-viewport::-webkit-scrollbar-thumb:hover {
   background-color: var(--panel-scrollbar-hover);

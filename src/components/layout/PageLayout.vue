@@ -78,7 +78,7 @@ const {token} = theme.useToken()
 }
 
 /* bottom bar */
-.bottom {
+.footer {
   height: 35px;
   padding: 0;
   /* noinspection CssUnresolvedCustomProperty */

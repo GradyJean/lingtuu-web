@@ -410,7 +410,7 @@ onMounted(() => {
 /* noinspection CssUnresolvedCustomProperty */
 .story-card {
   background: var(--story-panel-bg);
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid var(--story-border);
   overflow: hidden;
   transition: box-shadow 0.3s, transform 0.3s;
@@ -431,6 +431,7 @@ onMounted(() => {
   padding: 16px;
   border-bottom: 1px solid var(--story-border);
 }
+
 /* noinspection CssUnresolvedCustomProperty */
 .card-tag {
   color: var(--story-on-primary);

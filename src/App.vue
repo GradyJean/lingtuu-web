@@ -17,4 +17,8 @@ import {themeState} from "./theme";
 main {
   min-height: 100vh;
 }
+:deep(.ant-menu-item),
+:deep(.ant-btn ) {
+  border-radius: 5px;
+}
 </style>

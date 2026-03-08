@@ -1,5 +1,5 @@
 <template>
-  <BaseLayout>
+  <PageLayout>
     <template #header>
       <Header/>
     </template>
@@ -12,13 +12,13 @@
     <template #footer>
       <Footer/>
     </template>
-  </BaseLayout>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 
 
-import BaseLayout from "../components/layout/BaseLayout.vue";
+import PageLayout from "../components/layout/PageLayout.vue";
 import Footer from "../components/Footer.vue";
 import LeftMenuBar from "../components/LeftMenuBar.vue";
 import Header from "../components/Header.vue";

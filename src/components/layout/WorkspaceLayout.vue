@@ -7,15 +7,16 @@
       '--panel-text': token.colorText,
       '--panel-scrollbar': token.colorTextQuaternary,
       '--panel-scrollbar-hover': token.colorTextTertiary,
-      '--panel-shadow': token.boxShadowSecondary
+      '--layout-bg': token.colorBgLayout,
+      '--layout-bg-container': token.colorBgContainer,
     }"
     >
       <!-- top -->
-      <a-layout-header class="top">
-        <slot name="top-side-bar"/>
+      <a-layout-header class="header">
+        <slot name="header"/>
       </a-layout-header>
 
-      <a-layout class="body">
+      <a-layout class="main">
         <!-- left -->
         <a-layout-sider class="left">
           <slot name="left-side-bar"/>
@@ -31,8 +32,9 @@
       </a-layout>
 
       <!-- bottom -->
-      <a-layout-footer class="bottom"/>
-      <slot name="bottom-side-bar"/>
+      <a-layout-footer class="footer">
+        <slot name="footer"/>
+      </a-layout-footer>
     </a-layout>
   </a-config-provider>
 </template>
@@ -46,14 +48,24 @@ const {token} = theme.useToken()
 </script>
 
 <style scoped>
+:deep(.ant-layout-header),
+:deep(.ant-layout-sider),
+:deep(.ant-layout-content),
+:deep(.ant-layout-footer),
+:deep(.main) {
+  background: transparent !important;
+}
+
 .root {
   width: 100vw;
   height: 100vh;
+  /* noinspection CssUnresolvedCustomProperty */
+  background: var(--layout-bg);
 }
 
 /* top bar */
 /* noinspection CssUnresolvedCustomProperty */
-.top {
+.header {
   height: 70px;
   line-height: 70px;
   display: flex;
@@ -61,19 +73,23 @@ const {token} = theme.useToken()
   padding: 0;
   position: relative;
   z-index: 10;
-  box-shadow: var(--panel-shadow);
+  background: var(--layout-bg);
 }
 
 /* bottom bar */
-.bottom {
+.footer {
   height: 35px;
   padding: 0;
+  /* noinspection CssUnresolvedCustomProperty */
+  background: var(--layout-bg);
 }
 
 /* middle layout */
-.body {
+.main {
   flex: 1;
   min-height: 0;
+  /* noinspection CssUnresolvedCustomProperty */
+  background: var(--layout-bg-container);
 }
 
 /* side bars */
@@ -82,6 +98,8 @@ const {token} = theme.useToken()
   width: 35px !important;
   min-width: 35px !important;
   max-width: 35px !important;
+  /* noinspection CssUnresolvedCustomProperty */
+  background: var(--layout-bg);
 }
 
 /* center content */
@@ -89,5 +107,7 @@ const {token} = theme.useToken()
   padding: 0;
   margin: 0;
   overflow: auto;
+  /* noinspection CssUnresolvedCustomProperty */
+  background: var(--layout-bg);
 }
 </style>

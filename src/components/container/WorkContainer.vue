@@ -8,27 +8,6 @@ const uiStore = uiStateStore()
 const {token} = theme.useToken()
 
 // 监听窗口大小改变
-function onTopResize(e: { panes: any }): void {
-  if (!e?.panes) return
-  const panes = e.panes
-  let index = 0
-  // top
-  const topPane = panes[index]
-  if (topPane) {
-    uiStore.windowPosition.top.size = topPane.size
-  }
-  index++
-  // bottom
-  if (uiStore.windowPosition.bottom.display) {
-    const bottomPane = panes[index]
-    if (bottomPane) {
-      uiStore.windowPosition.bottom.size = bottomPane.size
-    }
-  }
-  uiStore.windowPositionSave()
-}
-
-// 监听窗口大小改变
 function onMainResize(e: { panes: any }): void {
   if (!e?.panes) return
   const panes = e.panes
@@ -69,37 +48,25 @@ function onMainResize(e: { panes: any }): void {
       '--splitpanes-splitter-border': token.colorBorderSecondary
     }"
   >
-    <!-- 整体：上下 -->
-    <Splitpanes horizontal class="workspace-split" @resized="onTopResize">
-      <!-- 上半区：左右 -->
-      <Pane :size="uiStore.windowPosition.top.size">
-        <Splitpanes class="workspace-split" @resized="onMainResize">
-          <Pane v-if="uiStore.windowPosition.left.display" :size="uiStore.windowPosition.left.size">
-            <PanelContainer>
-              <slot name="left"/>
-            </PanelContainer>
-          </Pane>
-          <!-- 中间区 -->
-          <Pane :size="uiStore.windowPosition.center.size">
-            <PanelContainer>
-              <slot name="center"/>
-            </PanelContainer>
-          </Pane>
-          <!-- 右半区 -->
-          <Pane
-              v-if="uiStore.windowPosition.right.display"
-              :size="uiStore.windowPosition.right.size"
-          >
-            <PanelContainer>
-              <slot name="right"/>
-            </PanelContainer>
-          </Pane>
-        </Splitpanes>
-      </Pane>
-      <!-- 下半区：通栏 -->
-      <Pane v-if="uiStore.windowPosition.bottom.display" :size="uiStore.windowPosition.bottom.size">
+    <Splitpanes class="workspace-split" @resized="onMainResize">
+      <Pane v-if="uiStore.windowPosition.left.display" :size="uiStore.windowPosition.left.size">
         <PanelContainer>
-          <slot name="bottom"/>
+          <slot name="left"/>
+        </PanelContainer>
+      </Pane>
+      <!-- 中间区 -->
+      <Pane :size="uiStore.windowPosition.center.size">
+        <PanelContainer>
+          <slot name="center"/>
+        </PanelContainer>
+      </Pane>
+      <!-- 右半区 -->
+      <Pane
+          v-if="uiStore.windowPosition.right.display"
+          :size="uiStore.windowPosition.right.size"
+      >
+        <PanelContainer>
+          <slot name="right"/>
         </PanelContainer>
       </Pane>
     </Splitpanes>
@@ -122,41 +89,11 @@ function onMainResize(e: { panes: any }): void {
 </style>
 
 <style>
-/* noinspection CssUnresolvedCustomProperty */
-.splitpanes .splitpanes__pane {
-  background-color: var(--splitpanes-pane-bg);
-}
-
-/* noinspection CssUnresolvedCustomProperty */
-.splitpanes__splitter {
-  background-color: var(--splitpanes-splitter-bg);
-}
-
-/* noinspection CssUnresolvedCustomProperty */
-.splitpanes__splitter::before,
-.splitpanes__splitter::after {
-  background-color: var(--splitpanes-splitter-line);
-}
-
-/* noinspection CssUnresolvedCustomProperty */
-.splitpanes__splitter:hover::before,
-.splitpanes__splitter:hover::after {
-  background-color: var(--splitpanes-splitter-line-hover);
-}
-
 /* 左右分隔（竖向） */
 /* noinspection CssUnresolvedCustomProperty */
 .splitpanes--vertical > .splitpanes__splitter {
   width: 5px;
-  border-left: 1px solid var(--splitpanes-splitter-border);
   cursor: ew-resize;
 }
 
-/* 上下分隔（横向） */
-/* noinspection CssUnresolvedCustomProperty */
-.splitpanes--horizontal > .splitpanes__splitter {
-  height: 5px;
-  border-top: 1px solid var(--splitpanes-splitter-border);
-  cursor: ns-resize;
-}
 </style>

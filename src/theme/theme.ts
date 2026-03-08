@@ -110,7 +110,7 @@ const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
       onAccent: '#0F1115'
     },
     border: {
-      subtle: 'rgba(255, 255, 255, 0.08)',
+      subtle: 'rgba(255, 255, 255, 0.06)',
       default: 'rgba(255, 255, 255, 0.14)',
       strong: 'rgba(255, 255, 255, 0.24)'
     },
