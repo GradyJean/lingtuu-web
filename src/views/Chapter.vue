@@ -10,7 +10,7 @@ import Footer from "../components/Footer.vue";
 const uiStore = uiStateStore()
 
 function menuClick(iconKey: string, isActive: boolean): void {
-  let windowPosition: 'left' | 'right' | 'bottom' = 'left'
+  let windowPosition: 'left' | 'right'  = 'left'
   switch (iconKey) {
     case 'project':
       windowPosition = 'left'
@@ -30,20 +30,19 @@ function menuClick(iconKey: string, isActive: boolean): void {
     <template #footer>
       <Footer/>
     </template>
-    <template #left-side-bar>
+    <template #left-side>
       <MenuBar>
         <MenuItem name="folder" menu-key="project" @click="menuClick"/>
       </MenuBar>
     </template>
-    <template #right-side-bar>
+    <template #right-side>
       <MenuBar>
         <MenuItem name="database" menu-key="database" @click="menuClick"/>
-        <MenuItem name="connect" menu-key="connect" @click="menuClick"/>
       </MenuBar>
     </template>
-    <template #ui-center>
+    <template #main>
       <WorkContainer>
-        <template #left style="background: white;"> left</template>
+        <template #left> left</template>
         <template #center> center</template>
         <template #right>
           right

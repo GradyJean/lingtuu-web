@@ -19,15 +19,15 @@
       <a-layout class="main">
         <!-- left -->
         <a-layout-sider class="left">
-          <slot name="left-side-bar"/>
+          <slot name="left-side"/>
         </a-layout-sider>
         <!-- center -->
         <a-layout-content class="center">
-          <slot name="ui-center"/>
+          <slot name="main"/>
         </a-layout-content>
         <!-- right -->
         <a-layout-sider class="right">
-          <slot name="right-side-bar"/>
+          <slot name="right-side"/>
         </a-layout-sider>
       </a-layout>
 

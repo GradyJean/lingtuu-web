@@ -2,7 +2,8 @@ import { defineStore } from 'pinia'
 
 const STORAGE_MENU = 'ui:menuState'
 const STORAGE_WINDOW = 'ui:windowPosition'
-type WindowPosition = 'left' | 'right' | 'center' | 'top' | 'bottom'
+type WindowPane = 'left' | 'center' | 'right'
+type TogglePane = 'left' | 'right'
 
 interface WindowConfig {
   display: boolean
@@ -30,18 +31,8 @@ export const uiStateStore = defineStore('ui', {
         display: true,
         size: 60,
         lastSize: 60
-      },
-      top: {
-        display: true,
-        size: 80,
-        lastSize: 80
-      },
-      bottom: {
-        display: true,
-        size: 20,
-        lastSize: 20
       }
-    } as Record<WindowPosition, WindowConfig>
+    } as Record<WindowPane, WindowConfig>
   }),
   actions: {
     menuClick(menuKey: string): void {
@@ -49,7 +40,7 @@ export const uiStateStore = defineStore('ui', {
       this.menuState[menuKey] = !current
     },
     // 打开窗口
-    windowShow(position: WindowPosition, display: boolean): void {
+    windowShow(position: TogglePane, display: boolean): void {
       const win = this.windowPosition[position]
       if (win.display === display) return
 
@@ -66,13 +57,6 @@ export const uiStateStore = defineStore('ui', {
             this.windowPosition.center.size -= effectiveSize
           } else {
             this.windowPosition.center.size += effectiveSize
-          }
-          break
-        case 'bottom':
-          if (display) {
-            this.windowPosition.top.size -= effectiveSize
-          } else {
-            this.windowPosition.top.size += effectiveSize
           }
           break
       }
@@ -98,7 +82,12 @@ export const uiStateStore = defineStore('ui', {
       }
       const windowRaw = localStorage.getItem(STORAGE_WINDOW)
       if (windowRaw) {
-        this.windowPosition = JSON.parse(windowRaw)
+        const parsed = JSON.parse(windowRaw)
+        this.windowPosition = {
+          left: parsed.left ?? this.windowPosition.left,
+          center: parsed.center ?? this.windowPosition.center,
+          right: parsed.right ?? this.windowPosition.right
+        }
       }
     },
     // 重置
