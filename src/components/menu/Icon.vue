@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, useAttrs} from 'vue'
 import {theme} from 'ant-design-vue'
-import icons, {type IconName} from '../../assets/icons/iconMapping'
+import icons, {type IconName} from '@assets/icons/iconMapping'
 
 const attrs = useAttrs()
 
@@ -36,6 +36,7 @@ const defaultStyle = computed(() => {
 </template>
 
 <style scoped>
+/* noinspection CssUnresolvedCustomProperty */
 .icon {
   width: 1em;
   height: 1em;
@@ -51,6 +52,7 @@ const defaultStyle = computed(() => {
   transition: background-color 0.15s ease;
 }
 
+/* noinspection CssUnresolvedCustomProperty */
 .icon:hover {
   background-color: v-bind('token.colorBgTextHover');
 }

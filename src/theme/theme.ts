@@ -59,7 +59,7 @@ const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
       surface: '#FFFFFF',
       elevated: '#FFFFFF',
       muted: '#F7F9F8',
-      spotlight: 'rgba(0, 0, 0, 0.85)'
+      spotlight: 'rgba(0, 0, 0, 0.5)'
     },
     text: {
       primary: 'rgba(0, 0, 0, 0.88)',
@@ -99,7 +99,7 @@ const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
       surface: '#171B20',
       elevated: '#1E2329',
       muted: '#14181D',
-      spotlight: 'rgba(255, 255, 255, 0.15)'
+      spotlight: 'rgba(255, 255, 255, 0.5)'
     },
     text: {
       primary: 'rgba(255, 255, 255, 0.90)',

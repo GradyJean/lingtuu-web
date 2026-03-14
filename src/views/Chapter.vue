@@ -10,7 +10,7 @@ import TiptapEditor from "../components/editor/TiptapEditor.vue";
 
 const uiStore = uiStateStore()
 
-function menuClick(iconKey: string, isActive: boolean): void {
+function menuActive(iconKey: string, isActive: boolean): void {
   let windowPosition: 'left' | 'right' = 'left'
   switch (iconKey) {
     case 'project':
@@ -37,12 +37,12 @@ function menuClick(iconKey: string, isActive: boolean): void {
     </template>
     <template #left-side>
       <MenuBar>
-        <MenuItem name="folder" menu-key="project" @click="menuClick"/>
+        <MenuItem icon-name="folder" menu-key="chapter" tips="章节" :default-active="true" @active="menuActive"/>
       </MenuBar>
     </template>
     <template #right-side>
       <MenuBar>
-        <MenuItem name="database" menu-key="database" @click="menuClick"/>
+        <MenuItem icon-name="database" menu-key="database" tips="资料库" :default-active="true" @active="menuActive"/>
       </MenuBar>
     </template>
     <template #main>

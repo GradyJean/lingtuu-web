@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {provide, ref} from 'vue'
 import {theme} from 'ant-design-vue'
-import {uiStateStore} from '../../stores/ui'
+import {menuStateStore} from '@stores/ui'
 
 const props = withDefaults(
     defineProps<{
@@ -13,13 +13,28 @@ const props = withDefaults(
 )
 
 const {token} = theme.useToken()
-const uiStore = uiStateStore()
+const uiStore = menuStateStore()
 
 const items = ref<string[]>([])
 
-function register(menuKey: string): void {
+function register(menuKey: string, defaultActive = false): void {
   if (!items.value.includes(menuKey)) {
     items.value.push(menuKey)
+  }
+
+  if (!(menuKey in uiStore.menuState)) {
+    uiStore.menuState[menuKey] = false
+  }
+
+  // 同一个 MenuBar 里如果多个 defaultActive=true，后注册的覆盖前面的
+  if (defaultActive) {
+    if (props.exclusive) {
+      for (const key of items.value) {
+        uiStore.menuState[key] = false
+      }
+    }
+    uiStore.menuState[menuKey] = true
+    uiStore.menuStateSave()
   }
 }
 
@@ -41,6 +56,7 @@ function activate(menuKey: string): void {
   } else {
     uiStore.menuState[menuKey] = !isActive
   }
+  uiStore.menuStateSave()
 }
 
 provide('menuBar', {
@@ -63,6 +79,6 @@ provide('menuBar', {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 </style>
