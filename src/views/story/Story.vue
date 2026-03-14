@@ -250,8 +250,8 @@ async function fetchStoryList() {
       title: searchTitle.value,
       type: activeTab.value,
     })
-    storyList.value = res.data.data.list
-    total.value = res.data.data.total
+    storyList.value = res.list
+    total.value = res.total
   } catch (error) {
     console.error('获取故事列表失败:', error)
   }

@@ -1,44 +1,53 @@
-import axios, {AxiosError} from 'axios'
+import axios, {AxiosError, type InternalAxiosRequestConfig} from 'axios'
 import type {AxiosRequestConfig} from 'axios'
 import {useAuthStore} from '@stores/auth'
 import {getDeviceId} from '@utils/device'
 
-// 创建 axios 实例
-const request = axios.create({
+const requestConfig = {
     baseURL: import.meta.env.PROD ? 'https://www.qmvector.com/lingtuu' : '/lingtuu',
     timeout: 30000,
-})
+}
 
+export const baseRequest = axios.create(requestConfig)
+export const appRequest = axios.create(requestConfig)
+
+/**
+ * helper function to add device id to request config
+ * @param config
+ */
+function addDeviceId(config: InternalAxiosRequestConfig<any>): InternalAxiosRequestConfig {
+    config.headers = config.headers ?? {}
+    // 添加设备 ID
+    config.headers['X-Device-Id'] = getDeviceId()
+    return config
+}
+
+function addAuthToken(config: InternalAxiosRequestConfig<any>): InternalAxiosRequestConfig {
+    const authStore = useAuthStore()
+    config.headers = config.headers ?? {}
+    // 添加 token
+    const token = authStore.accessToken?.token
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+}
+
+// 请求拦截器
+baseRequest.interceptors.request.use(addDeviceId)
+appRequest.interceptors.request.use(addDeviceId)
+appRequest.interceptors.request.use(addAuthToken)
 // 是否正在刷新 token 的标志
 let isRefreshing = false
 // 重试队列
-let retryQueue: Array<() => void> = []
+let retryQueue: Array<{
+    resolve: () => void
+    reject: (error: unknown) => void
+}> = []
 
-// 请求拦截器
-request.interceptors.request.use(
-    async (config) => {
-        // 注意：这里不要调用 loadFromStorage()，只需要获取 store 实例即可
-        const authStore = useAuthStore()
-
-        // 添加设备 ID
-        config.headers['X-Device-Id'] = getDeviceId()
-
-        // 直接获取当前 token，不在这里刷新（刷新在响应拦截器中处理）
-        const token = authStore.accessToken?.token
-
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-        }
-
-        return config
-    },
-    (error) => {
-        return Promise.reject(error)
-    }
-)
 
 // 响应拦截器
-request.interceptors.response.use(
+appRequest.interceptors.response.use(
     (response) => {
         return response
     },
@@ -57,9 +66,12 @@ request.interceptors.response.use(
 
             // 如果正在刷新 token，将请求加入队列
             if (isRefreshing) {
-                return new Promise((resolve) => {
-                    retryQueue.push(() => {
-                        resolve(request(originalRequest))
+                return new Promise((resolve, reject) => {
+                    retryQueue.push({
+                        resolve: () => {
+                            resolve(appRequest(originalRequest))
+                        },
+                        reject,
                     })
                 })
             }
@@ -73,16 +85,20 @@ request.interceptors.response.use(
 
                 if (refreshed) {
                     // 刷新成功，执行队列中的请求
-                    retryQueue.forEach((cb) => cb())
+                    retryQueue.forEach(({resolve}) => resolve())
                     retryQueue = []
-                    return request(originalRequest)
+                    return appRequest(originalRequest)
                 } else {
                     // 刷新失败，清除登录状态
+                    retryQueue.forEach(({reject}) => reject(error))
+                    retryQueue = []
                     authStore.clearAuth()
                     return Promise.reject(error)
                 }
             } catch (refreshError) {
                 // 刷新异常，清除登录状态
+                retryQueue.forEach(({reject}) => reject(refreshError))
+                retryQueue = []
                 authStore.clearAuth()
                 return Promise.reject(refreshError)
             } finally {
@@ -93,5 +109,3 @@ request.interceptors.response.use(
         return Promise.reject(error)
     }
 )
-
-export default request

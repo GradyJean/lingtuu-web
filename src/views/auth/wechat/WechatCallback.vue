@@ -13,8 +13,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuthStore } from '../../../stores/auth'
-import request from '../../../utils/request'
+import { useAuthStore } from '@stores/auth.ts'
+import request from '@api/request.ts'
 
 interface TokenInfo {
   token: string

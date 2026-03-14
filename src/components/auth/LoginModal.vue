@@ -302,7 +302,14 @@ import {message, theme} from 'ant-design-vue'
 import {UserOutlined, LockOutlined, WechatOutlined, AlipayOutlined} from '@ant-design/icons-vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useAuthStore} from '@stores/auth.ts'
-import request from '@utils/request.ts'
+import {
+  checkIdentifierExists as checkIdentifierExistsApi,
+  getThirdPlatforms,
+  loginAuth,
+  registerAuth,
+  resetCredential,
+  sendVerifyCode
+} from '@api/auth'
 import WechatLogin from '@components/auth/wechat/WechatLogin.vue'
 
 const route = useRoute()
@@ -361,10 +368,7 @@ const cardTitle = computed(() => {
 // 加载第三方平台列表
 async function loadThirdPlatforms() {
   try {
-    const res = await request.get('/auth/third/platforms')
-    if (res.data.success) {
-      thirdPlatforms.value = res.data.data || []
-    }
+    thirdPlatforms.value = await getThirdPlatforms()
   } catch (error) {
     console.error('加载第三方平台失败:', error)
   }
@@ -420,26 +424,21 @@ async function sendverify_code() {
 
   sendingCode.value = true
   try {
-    const res = await request.post('/auth/verifyCode/send', {
+    await sendVerifyCode({
       identifier,
       identifierType,
     })
-
-    if (res.data.success) {
-      message.success('验证码已发送')
-      // 倒计时
-      countdown.value = 60
-      const timer = setInterval(() => {
-        countdown.value--
-        if (countdown.value <= 0) {
-          clearInterval(timer)
-        }
-      }, 1000)
-    } else {
-      message.error(res.data.message || '发送失败')
-    }
-  } catch (error: any) {
-    message.error(error.response?.data?.message || '发送失败')
+    message.success('验证码已发送')
+    // 倒计时
+    countdown.value = 60
+    const timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0) {
+        clearInterval(timer)
+      }
+    }, 1000)
+  } catch {
+    // 统一错误弹窗已在 api 层处理
   } finally {
     sendingCode.value = false
   }
@@ -454,11 +453,8 @@ async function checkIdentifierExists() {
   if (!identifierType) return
 
   try {
-    const res = await request.get('/auth/identifier/exists', {
-      params: {identifier},
-    })
-
-    if (res.data.success && res.data.data) {
+    const exists = await checkIdentifierExistsApi(identifier)
+    if (exists) {
       message.warning('该账号已注册')
     }
   } catch (error) {
@@ -479,32 +475,31 @@ async function handleLogin() {
   loggingIn.value = true
   try {
     const identifierType = checkIdentifierFormat(loginForm.identifier)
+    if (!identifierType) {
+      message.warning('请输入正确的手机号或邮箱')
+      return
+    }
 
-    const res = await request.post('/auth/login', {
+    const tokenData = await loginAuth({
       identifier: loginForm.identifier,
       credential: loginForm.credential,
       verify_code_login: loginForm.verify_code_login,
       verify_code: loginForm.verify_code_login ? loginForm.verify_code : undefined,
       identifierType,
     })
-    if (res.data.success) {
-      const tokenData = res.data.data
-      authStore.setLoginInfo({
-        access_token: {
-          token: tokenData.access_token.token,
-          expire_at: tokenData.access_token.expire_at,
-        },
-        refresh_token: {
-          token: tokenData.refresh_token.token,
-          expire_at: tokenData.refresh_token.expire_at,
-        },
-      })
-      message.success('登录成功')
-    } else {
-      message.error(res.data.message || '登录失败')
-    }
-  } catch (error: any) {
-    message.error(error.response?.data?.message || '登录失败')
+    authStore.setLoginInfo({
+      access_token: {
+        token: tokenData.access_token.token,
+        expire_at: tokenData.access_token.expire_at,
+      },
+      refresh_token: {
+        token: tokenData.refresh_token.token,
+        expire_at: tokenData.refresh_token.expire_at,
+      },
+    })
+    message.success('登录成功')
+  } catch {
+    // 统一错误弹窗已在 api 层处理
   } finally {
     loggingIn.value = false
   }
@@ -515,22 +510,21 @@ async function handleRegister() {
   registering.value = true
   try {
     const identifierType = checkIdentifierFormat(registerForm.identifier)
+    if (!identifierType) {
+      message.warning('请输入正确的手机号或邮箱')
+      return
+    }
 
-    const res = await request.post('/auth/register', {
+    await registerAuth({
       identifier: registerForm.identifier,
       credential: registerForm.credential,
       verify_code: registerForm.verify_code,
       identifierType,
     })
-
-    if (res.data.success) {
-      message.success('注册成功')
-      switchView('login')
-    } else {
-      message.error(res.data.message || '注册失败')
-    }
-  } catch (error: any) {
-    message.error(error.response?.data?.message || '注册失败')
+    message.success('注册成功')
+    switchView('login')
+  } catch {
+    // 统一错误弹窗已在 api 层处理
   } finally {
     registering.value = false
   }
@@ -541,22 +535,21 @@ async function handleForgotPassword() {
   resetting.value = true
   try {
     const identifierType = checkIdentifierFormat(forgotForm.identifier)
+    if (!identifierType) {
+      message.warning('请输入正确的手机号或邮箱')
+      return
+    }
 
-    const res = await request.post('/auth/credential/reset', {
+    await resetCredential({
       identifier: forgotForm.identifier,
       credential: forgotForm.credential,
       verify_code: forgotForm.verify_code,
       identifierType,
     })
-
-    if (res.data.success) {
-      message.success('密码重置成功')
-      switchView('login')
-    } else {
-      message.error(res.data.message || '重置失败')
-    }
-  } catch (error: any) {
-    message.error(error.response?.data?.message || '重置失败')
+    message.success('密码重置成功')
+    switchView('login')
+  } catch {
+    // 统一错误弹窗已在 api 层处理
   } finally {
     resetting.value = false
   }

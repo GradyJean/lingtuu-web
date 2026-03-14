@@ -7,7 +7,7 @@ import MenuItem from '@components/menu/MenuItem.vue'
 import WorkspaceLayout from "@components/layout/WorkspaceLayout.vue";
 import Header from "@components/Header.vue";
 import Footer from "@components/Footer.vue";
-import Editor from "@components/editor/Editor.vue";
+import TiptapEditor from "@components/editor/Editor.vue";
 import type {JSONContent} from '@tiptap/vue-3'
 
 const uiStore = uiStateStore()
@@ -56,7 +56,7 @@ function handleEditorSave(payload: { html: string; text: string; json: JSONConte
       <WorkContainer>
         <template #left> left</template>
         <template #center>
-          <Editor v-model="chapterContent" @save="handleEditorSave"/>
+          <TiptapEditor v-model="chapterContent" @save="handleEditorSave"/>
         </template>
         <template #right>
           right

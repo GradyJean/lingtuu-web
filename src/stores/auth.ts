@@ -1,6 +1,6 @@
 import {ref, computed} from 'vue'
 import {defineStore} from 'pinia'
-import axios from 'axios'
+import {logoutAuth, refreshAuthToken} from '@api/auth'
 
 interface TokenInfo {
     token: string
@@ -77,15 +77,15 @@ export const useAuthStore = defineStore('auth', () => {
      * 设置登录信息
      */
     function setLoginInfo(data: {
-      access_token: { token: string; expire_at: number }
-      refresh_token: { token: string; expire_at: number }
+        access_token: { token: string; expire_at: number }
+        refresh_token: { token: string; expire_at: number }
     }) {
         // 确保 expire_at 是毫秒级时间戳
-        const accessExpireAt = data.access_token.expire_at > 1e12 
-            ? data.access_token.expire_at 
+        const accessExpireAt = data.access_token.expire_at > 1e12
+            ? data.access_token.expire_at
             : data.access_token.expire_at * 1000
-        const refreshExpireAt = data.refresh_token.expire_at > 1e12 
-            ? data.refresh_token.expire_at 
+        const refreshExpireAt = data.refresh_token.expire_at > 1e12
+            ? data.refresh_token.expire_at
             : data.refresh_token.expire_at * 1000
 
         accessToken.value = {
@@ -131,28 +131,18 @@ export const useAuthStore = defineStore('auth', () => {
         }
 
         try {
-            // 使用 axios 直接请求，避免循环调用 request 拦截器
-            const response = await axios.post('/lingtuu/auth/token/refresh', {
-                token: refreshToken.value.token,
-            })
-
-            if (response.data.success) {
-                const tokenData = response.data.data
-                // 直接更新 token，不要调用 startCheckTimer()
-                accessToken.value = {
-                    token: tokenData.access_token.token,
-                    expire_at: tokenData.access_token.expire_at,
-                }
-                refreshToken.value = {
-                    token: tokenData.refresh_token.token,
-                    expire_at: tokenData.refresh_token.expire_at,
-                }
-                saveToStorage()
-                return true
-            } else {
-                clearAuth()
-                return false
+            const tokenData = await refreshAuthToken(refreshToken.value.token)
+            // 直接更新 token，不要调用 startCheckTimer()
+            accessToken.value = {
+                token: tokenData.access_token.token,
+                expire_at: tokenData.access_token.expire_at,
             }
+            refreshToken.value = {
+                token: tokenData.refresh_token.token,
+                expire_at: tokenData.refresh_token.expire_at,
+            }
+            saveToStorage()
+            return true
         } catch (error) {
             console.error('刷新 token 异常:', error)
             clearAuth()
@@ -199,10 +189,7 @@ export const useAuthStore = defineStore('auth', () => {
      */
     async function logout() {
         try {
-            // 使用 axios 直接请求，避免循环调用
-            await axios.post('/auth/logout', {
-                token: accessToken.value?.token,
-            })
+            await logoutAuth(accessToken.value?.token)
         } catch (error) {
             console.error('退出登录失败:', error)
         } finally {

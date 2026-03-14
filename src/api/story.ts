@@ -1,5 +1,5 @@
-import request from '@utils/request'
-import type {PageInput, PageResult, ApiResult} from '@api/types'
+import appApi from '@api/index'
+import type {PageInput, PageResult} from '@api/types'
 
 // ==================== Story 相关类型 ====================
 
@@ -18,20 +18,18 @@ export interface StoryListParams extends PageInput {
     type?: 'SCRIPT' | 'SHORT' | 'LONG' | 'VIDEO' | 'ALL'
 }
 
-export type StoryListResult = ApiResult<PageResult<StoryItem>>
-
 /**
  * 分页获取故事列表
  */
 export function getStoryList(params: StoryListParams) {
-    return request.get<StoryListResult>('/api/story', {params})
+    return appApi.get<PageResult<StoryItem>>('/api/story', params)
 }
 
 /**
  * 根据 ID 获取故事详情
  */
 export function getStoryById(id: string) {
-    return request.get(`/api/story/${id}`)
+    return appApi.get<StoryItem>(`/api/story/${id}`)
 }
 
 /**
@@ -43,7 +41,7 @@ export function createStory(data: {
     perspective: 'FIRST' | 'THIRD'
     target_reader: 'FEMALE' | 'MALE' | 'ALL'
 }) {
-    return request.put('/api/story', data)
+    return appApi.put<StoryItem>('/api/story', data)
 }
 
 /**
@@ -59,12 +57,12 @@ export function updateStory(data: {
     target_reader?: 'FEMALE' | 'MALE' | 'ALL'
     status?: 'DRAFT' | 'WRITING' | 'COMPLETED'
 }) {
-    return request.post('/api/story', data)
+    return appApi.post<StoryItem>('/api/story', data)
 }
 
 /**
  * 删除故事
  */
 export function deleteStory(id: string) {
-    return request.delete(`/api/story/${id}`)
+    return appApi.delete<null>(`/api/story/${id}`)
 }
