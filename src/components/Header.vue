@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import {UserOutlined, LogoutOutlined} from '@ant-design/icons-vue'
-import {useRouter} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import {useAuthStore} from '@stores/auth'
 import {theme} from 'ant-design-vue'
 
 const {token} = theme.useToken()
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 function handleMenuClick({key}: { key: string }) {
   if (key === 'profile') {
     router.push('/profile')
   } else if (key === 'logout') {
+    authStore.rememberLoginRedirect(route.fullPath)
     authStore.logout()
-    router.push('/')
   }
 }
 </script>

@@ -60,7 +60,7 @@ appRequest.interceptors.response.use(
 
             // 如果是重试的请求，直接清除登录状态
             if (originalRequest._retry) {
-                authStore.clearAuth()
+                authStore.requireLogin()
                 return Promise.reject(error)
             }
 
@@ -92,14 +92,14 @@ appRequest.interceptors.response.use(
                     // 刷新失败，清除登录状态
                     retryQueue.forEach(({reject}) => reject(error))
                     retryQueue = []
-                    authStore.clearAuth()
+                    authStore.requireLogin()
                     return Promise.reject(error)
                 }
             } catch (refreshError) {
                 // 刷新异常，清除登录状态
                 retryQueue.forEach(({reject}) => reject(refreshError))
                 retryQueue = []
-                authStore.clearAuth()
+                authStore.requireLogin()
                 return Promise.reject(refreshError)
             } finally {
                 isRefreshing = false

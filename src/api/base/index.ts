@@ -2,6 +2,7 @@ import {message} from 'ant-design-vue'
 import type {AxiosInstance, AxiosRequestConfig} from 'axios'
 import {appRequest, baseRequest} from '@api/base/request.ts'
 import type {ApiResult} from '@api/base/types.ts'
+import {useAuthStore} from '@stores/auth.ts'
 
 type ApiClientConfig = AxiosRequestConfig & {
     silent?: boolean
@@ -34,6 +35,25 @@ function extractErrorMessage(error: unknown): string {
     return '请求失败，请稍后重试'
 }
 
+function isUnauthorizedResult(code: ApiResult<unknown>['code']): boolean {
+    return code === 401 || code === '401' || code === 'AUTH_UNAUTHORIZED'
+}
+
+function isUnauthorizedError(error: unknown): boolean {
+    if (typeof error !== 'object' || !error || !('response' in error)) {
+        return false
+    }
+
+    const response = (error as {
+        response?: {
+            status?: number
+            data?: { code?: number | string }
+        }
+    }).response
+
+    return response?.status === 401 || isUnauthorizedResult(response?.data?.code ?? '')
+}
+
 function createApiClient(request: AxiosInstance): ApiClient {
     async function unwrapResult<T>(
         promise: Promise<{ data: ApiResult<T> }>,
@@ -47,9 +67,13 @@ function createApiClient(request: AxiosInstance): ApiClient {
                 return result.data
             }
 
+            if (request === appRequest && isUnauthorizedResult(result.code)) {
+                useAuthStore().requireLogin()
+            }
+
             throw new Error(result.message || '请求失败')
         } catch (error) {
-            if (!silent) {
+            if (!silent && !isUnauthorizedError(error)) {
                 message.error(extractErrorMessage(error))
             }
             throw error

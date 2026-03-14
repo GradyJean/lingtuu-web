@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, ref, watch} from 'vue'
 import {theme, message} from 'ant-design-vue'
 import {useRoute} from 'vue-router'
 import {
@@ -239,12 +239,6 @@ async function handleDelete(chapter: ChapterItem) {
 watch(resolvedStoryId, () => {
   fetchChapterList()
 }, {immediate: true})
-
-onMounted(() => {
-  if (!chapterList.value.length) {
-    fetchChapterList()
-  }
-})
 </script>
 
 <template>

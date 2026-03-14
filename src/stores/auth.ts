@@ -4,6 +4,7 @@ import {logoutAuth, refreshAuthToken, type TokenInfo} from '@api/auth/auth.ts'
 
 const STORE_ACCESS_TOKEN = 'accessToken'
 const STORE_REFRESH_TOKEN = 'refreshToken'
+const LOGIN_REDIRECT_KEY = 'login_redirect_from'
 
 export const useAuthStore = defineStore('auth', () => {
     // Token 信息
@@ -59,6 +60,11 @@ export const useAuthStore = defineStore('auth', () => {
         if (refreshToken.value) {
             localStorage.setItem(STORE_REFRESH_TOKEN, JSON.stringify(refreshToken.value))
         }
+    }
+
+    function rememberLoginRedirect(path?: string) {
+        const redirect = path ?? `${window.location.pathname}${window.location.search}${window.location.hash}`
+        sessionStorage.setItem(LOGIN_REDIRECT_KEY, redirect)
     }
 
     /**
@@ -186,6 +192,11 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem(STORE_REFRESH_TOKEN)
     }
 
+    function requireLogin(path?: string) {
+        rememberLoginRedirect(path)
+        clearAuth()
+    }
+
     /**
      * 退出登录
      */
@@ -195,7 +206,7 @@ export const useAuthStore = defineStore('auth', () => {
         } catch (error) {
             console.error('退出登录失败:', error)
         } finally {
-            clearAuth()
+            requireLogin()
         }
     }
 
@@ -230,7 +241,9 @@ export const useAuthStore = defineStore('auth', () => {
         // 方法
         loadFromStorage,
         setLoginInfo,
+        rememberLoginRedirect,
         clearAuth,
+        requireLogin,
         logout,
         getValidAccessToken,
         refreshTokenIfNeeded,

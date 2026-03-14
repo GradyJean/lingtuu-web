@@ -38,7 +38,7 @@ const router = createRouter({
             path: '/chapter/:id',
             name: 'chapter',
             component: () => import('@views/story/Chapter.vue'),
-            meta: {requiresAuth: false},
+            meta: {requiresAuth: true},
         },
     ],
 })
