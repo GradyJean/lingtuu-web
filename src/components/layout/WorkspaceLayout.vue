@@ -31,8 +31,8 @@
 
 <script setup lang="ts">
 import {theme} from 'ant-design-vue'
-import {themeState} from '../../theme'
-import {themeMap} from '../../theme/theme'
+import {themeState} from '@/theme'
+import {themeMap} from '@/theme/theme.ts'
 import {ref} from "vue";
 
 const {token} = theme.useToken()

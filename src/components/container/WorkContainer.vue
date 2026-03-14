@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {uiStateStore} from '../../stores/ui'
-import PanelContainer from '../../components/container/PanelContainer.vue'
-import {Pane, Splitpanes} from '../../components/splitpanes'
+import {uiStateStore} from '@stores/ui.ts'
+import PanelContainer from '@components/container/PanelContainer.vue'
+import {Pane, Splitpanes} from '@components/splitpanes'
 
 const uiStore = uiStateStore()
 

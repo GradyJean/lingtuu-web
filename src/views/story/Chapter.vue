@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import WorkContainer from '../components/container/WorkContainer.vue'
-import {uiStateStore} from '../stores/ui'
-import MenuBar from '../components/menu/MenuBar.vue'
-import MenuItem from '../components/menu/MenuItem.vue'
-import WorkspaceLayout from "../components/layout/WorkspaceLayout.vue";
-import Header from "../components/Header.vue";
-import Footer from "../components/Footer.vue";
-import TiptapEditor from "../components/editor/TiptapEditor.vue";
+import WorkContainer from '@components/container/WorkContainer.vue'
+import {uiStateStore} from '@stores/ui.ts'
+import MenuBar from '@components/menu/MenuBar.vue'
+import MenuItem from '@components/menu/MenuItem.vue'
+import WorkspaceLayout from "@components/layout/WorkspaceLayout.vue";
+import Header from "@components/Header.vue";
+import Footer from "@components/Footer.vue";
+import TiptapEditor from "@components/editor/TiptapEditor.vue";
 
 const uiStore = uiStateStore()
 
@@ -37,7 +37,7 @@ function menuActive(iconKey: string, isActive: boolean): void {
     </template>
     <template #left-side>
       <MenuBar>
-        <MenuItem icon-name="folder" menu-key="chapter" tips="章节" :default-active="true" @active="menuActive"/>
+        <MenuItem icon-name="folder" menu-key="chapter" tips="章节管理" :default-active="true" @active="menuActive"/>
       </MenuBar>
     </template>
     <template #right-side>

@@ -18,9 +18,9 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { theme } from 'ant-design-vue'
 import { ArrowLeftOutlined } from '@ant-design/icons-vue'
-import { useAuthStore } from '../../../stores/auth'
-import request from '../../../utils/request'
-import { getDeviceId } from '../../../utils/device'
+import { useAuthStore } from '@stores/auth.ts'
+import request from '@utils/request'
+import { getDeviceId } from '@utils/device.ts'
 
 defineEmits(['back'])
 

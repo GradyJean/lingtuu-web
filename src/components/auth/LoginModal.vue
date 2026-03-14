@@ -301,9 +301,9 @@ import {ref, reactive, computed, onMounted, watch} from 'vue'
 import {message, theme} from 'ant-design-vue'
 import {UserOutlined, LockOutlined, WechatOutlined, AlipayOutlined} from '@ant-design/icons-vue'
 import {useRoute, useRouter} from 'vue-router'
-import {useAuthStore} from '../../stores/auth.ts'
-import request from '../../utils/request.ts'
-import WechatLogin from './wechat/WechatLogin.vue'
+import {useAuthStore} from '@stores/auth.ts'
+import request from '@utils/request.ts'
+import WechatLogin from '@components/auth/wechat/WechatLogin.vue'
 
 const route = useRoute()
 const router = useRouter()

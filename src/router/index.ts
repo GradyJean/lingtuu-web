@@ -1,5 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomeView from '@views/HomeView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,31 +13,31 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'dashboard',
-                    component: () => import('../views/Dashboard.vue'),
+                    component: () => import('@views/Dashboard.vue'),
                 },
                 {
                     path: 'story',
                     name: 'story',
-                    component: () => import('../views/Story.vue'),
+                    component: () => import('@views/story/Story.vue'),
                 },
             ],
         },
         {
             path: '/auth/wechat/callback',
             name: 'wechat-callback',
-            component: () => import('../views/auth/wechat/WechatCallback.vue'),
+            component: () => import('@views/auth/wechat/WechatCallback.vue'),
             meta: {requiresAuth: false},
         },
         {
             path: '/profile',
             name: 'profile',
-            component: () => import('../views/UserProfileView.vue'),
+            component: () => import('@views/UserProfileView.vue'),
             meta: {requiresAuth: true},
         },
         {
             path: '/chapter/:id',
             name: 'chapter',
-            component: () => import('../views/Chapter.vue'),
+            component: () => import('@views/story/Chapter.vue'),
             meta: {requiresAuth: false},
         },
     ],

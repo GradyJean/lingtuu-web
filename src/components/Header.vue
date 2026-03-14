@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {UserOutlined, LogoutOutlined} from '@ant-design/icons-vue'
 import {useRouter} from 'vue-router'
-import {useAuthStore} from '../stores/auth'
+import {useAuthStore} from '@stores/auth'
 import {theme} from 'ant-design-vue'
 
 const {token} = theme.useToken()

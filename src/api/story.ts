@@ -1,5 +1,5 @@
-import request from '../utils/request'
-import type {PageInput, PageResult, ApiResult} from './types'
+import request from '@utils/request'
+import type {PageInput, PageResult, ApiResult} from '@api/types'
 
 // ==================== Story 相关类型 ====================
 

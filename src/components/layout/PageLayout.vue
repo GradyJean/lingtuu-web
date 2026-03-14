@@ -28,8 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import PanelContainer from "../container/PanelContainer.vue";
+import PanelContainer from "@components/container/PanelContainer.vue";
 import {theme} from 'ant-design-vue'
+
 const {token} = theme.useToken()
 </script>
 
@@ -41,6 +42,7 @@ const {token} = theme.useToken()
 :deep(.main) {
   background: transparent !important;
 }
+
 .root {
   width: 100vw;
   height: 100vh;
