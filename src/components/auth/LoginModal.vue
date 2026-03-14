@@ -62,7 +62,7 @@
                   <a-button
                       :loading="sendingCode"
                       :disabled="!canSendCode || countdown > 0"
-                      @click="sendverify_code"
+                      @click="sendVerifyCodeAction"
                       size="large"
                       block
                   >
@@ -101,7 +101,7 @@
                   v-for="platform in thirdPlatforms"
                   :key="platform.platform"
                   class="third-icon-wrapper"
-                  @click="handleShowWechat"
+                  @click="handleThirdPlatformLogin(platform.platform)"
               >
                 <a class="third-icon">
                   <component :is="getPlatformIcon(platform.platform)" :style="{ fontSize: '24px' }"/>
@@ -191,7 +191,7 @@
                   <a-button
                       :loading="sendingCode"
                       :disabled="!canSendCode || countdown > 0"
-                      @click="sendverify_code"
+                      @click="sendVerifyCodeAction"
                       size="large"
                       block
                   >
@@ -270,7 +270,7 @@
                   <a-button
                       :loading="sendingCode"
                       :disabled="!canSendCode || countdown > 0"
-                      @click="sendverify_code"
+                      @click="sendVerifyCodeAction"
                       size="large"
                       block
                   >
@@ -308,7 +308,8 @@ import {
   loginAuth,
   registerAuth,
   resetCredential,
-  sendVerifyCode
+  sendVerifyCode,
+  type ThirdPlatformItem
 } from '@api/auth'
 import WechatLogin from '@components/auth/wechat/WechatLogin.vue'
 
@@ -355,7 +356,7 @@ const resetting = ref(false)
 const sendingCode = ref(false)
 const countdown = ref(0)
 const canSendCode = ref(false)
-const thirdPlatforms = ref<Array<{ name: string; platform: string }>>([])
+const thirdPlatforms = ref<ThirdPlatformItem[]>([])
 
 // 卡片标题
 const cardTitle = computed(() => {
@@ -391,6 +392,15 @@ function handleShowWechat() {
   sessionStorage.setItem('login_redirect_from', route.fullPath)
 }
 
+function handleThirdPlatformLogin(platform: string) {
+  if (platform === 'wechat') {
+    handleShowWechat()
+    return
+  }
+
+  message.info(`${platform} 登录暂未接入`)
+}
+
 // 关闭微信登录
 function closeWechat() {
   showWechat.value = false
@@ -413,7 +423,7 @@ watch(() => [loginForm.identifier, registerForm.identifier, forgotForm.identifie
 }, {immediate: true})
 
 // 发送验证码
-async function sendverify_code() {
+async function sendVerifyCodeAction() {
   const identifier = loginForm.identifier || registerForm.identifier || forgotForm.identifier
   const identifierType = checkIdentifierFormat(identifier)
 

@@ -20,7 +20,7 @@ import {theme} from 'ant-design-vue'
 import {ArrowLeftOutlined} from '@ant-design/icons-vue'
 import {useAuthStore} from '@stores/auth.ts'
 import {getDeviceId} from '@utils/device.ts'
-import {baseRequest} from "@api/request.ts";
+import {getWechatInfo} from '@api/auth'
 
 defineEmits(['back'])
 
@@ -29,17 +29,12 @@ const {token} = theme.useToken()
 const loading = ref(true)
 const wechatConfig = ref<{ appId?: string; scope?: string }>({})
 let pollTimer: number | null = null
+let messageHandler: ((event: MessageEvent) => void) | null = null
 
 // 加载微信配置
 async function loadWechatConfig() {
   try {
-    const res = await baseRequest.get('/auth/third/wechat/info')
-    if (res.data.success) {
-      wechatConfig.value = {
-        appId: res.data.data?.appId,
-        scope: res.data.data?.scope,
-      }
-    }
+    wechatConfig.value = await getWechatInfo()
   } catch (error) {
     console.error('加载微信配置失败:', error)
     wechatConfig.value = {
@@ -107,18 +102,17 @@ function startPollingLoginStatus() {
   if (pollTimer) {
     clearInterval(pollTimer)
   }
-
+  
   // 监听 postMessage（从回调窗口）
-  const handleMessage = (event: MessageEvent) => {
+  messageHandler = (event: MessageEvent) => {
     if (event.data && event.data.type === 'wechat_login_success') {
-      window.removeEventListener('message', handleMessage)
       stopPollingLoginStatus()
       // 重新加载登录状态（会触发 LoginModal 的 watch 跳转）
       authStore.loadFromStorage()
     }
   }
-
-  window.addEventListener('message', handleMessage)
+  
+  window.addEventListener('message', messageHandler)
 
   // 同时轮询 localStorage（兼容情况）
   pollTimer = window.setInterval(() => {
@@ -135,6 +129,10 @@ function stopPollingLoginStatus() {
   if (pollTimer) {
     clearInterval(pollTimer)
     pollTimer = null
+  }
+  if (messageHandler) {
+    window.removeEventListener('message', messageHandler)
+    messageHandler = null
   }
 }
 

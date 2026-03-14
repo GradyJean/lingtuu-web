@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // 定时检查 token 过期的定时器
     let checkTimer: number | null = null
+    let refreshPromise: Promise<boolean> | null = null
 
     /**
      * 从 localStorage 加载登录状态
@@ -111,7 +112,7 @@ export const useAuthStore = defineStore('auth', () => {
         // 每分钟检查一次
         checkTimer = window.setInterval(() => {
             if (accessToken.value && isTokenExpired(accessToken.value)) {
-                doRefreshToken()
+                void refreshTokenIfNeeded()
             }
         }, 60 * 1000)
     }
@@ -145,7 +146,6 @@ export const useAuthStore = defineStore('auth', () => {
             return true
         } catch (error) {
             console.error('刷新 token 异常:', error)
-            clearAuth()
             return false
         }
     }
@@ -163,8 +163,15 @@ export const useAuthStore = defineStore('auth', () => {
             return true
         }
 
-        const refreshed = await doRefreshToken()
-        return !!(refreshed && accessToken.value);
+        if (!refreshPromise) {
+            refreshPromise = doRefreshToken()
+                .finally(() => {
+                    refreshPromise = null
+                })
+        }
+
+        const refreshed = await refreshPromise
+        return !!(refreshed && accessToken.value)
 
     }
 
@@ -179,6 +186,7 @@ export const useAuthStore = defineStore('auth', () => {
             clearInterval(checkTimer)
             checkTimer = null
         }
+        refreshPromise = null
 
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')

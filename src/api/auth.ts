@@ -17,6 +17,11 @@ export interface ThirdPlatformItem {
   platform: string
 }
 
+export interface WechatInfo {
+  appId?: string
+  scope?: string
+}
+
 export interface SendVerifyCodeInput {
   identifier: string
   identifierType: IdentifierType
@@ -54,6 +59,10 @@ export function getThirdPlatforms(): Promise<ThirdPlatformItem[]> {
   return baseApi.get<ThirdPlatformItem[]>('/auth/third/platforms', undefined, {silent: true})
 }
 
+export function getWechatInfo(): Promise<WechatInfo> {
+  return baseApi.get<WechatInfo>('/auth/third/wechat/info', undefined, {silent: true})
+}
+
 export function sendVerifyCode(data: SendVerifyCodeInput): Promise<null> {
   return baseApi.post<null>('/auth/verifyCode/send', data)
 }
@@ -64,6 +73,16 @@ export function checkIdentifierExists(identifier: string): Promise<boolean> {
 
 export function loginAuth(data: LoginInput): Promise<AuthTokenPair> {
   return baseApi.post<AuthTokenPair>('/auth/login', data)
+}
+
+export function loginWithWechat(code: string, state?: string): Promise<AuthTokenPair> {
+  return baseApi.post<AuthTokenPair>(
+    '/auth/third/wechat/login',
+    undefined,
+    {
+      params: {code, state},
+    }
+  )
 }
 
 export function registerAuth(data: RegisterInput): Promise<null> {

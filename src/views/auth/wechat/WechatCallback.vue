@@ -14,24 +14,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@stores/auth.ts'
-import request from '@api/request.ts'
-
-interface TokenInfo {
-  token: string
-  expire_at: number
-}
-
-interface AuthToken {
-  access_token: TokenInfo
-  refresh_token: TokenInfo
-}
-
-interface LoginResponse {
-  success: boolean
-  code: string
-  message: string
-  data: AuthToken
-}
+import {loginWithWechat} from '@api/auth'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -70,54 +53,33 @@ onMounted(async () => {
 
     sessionStorage.setItem('wechat_processed_code', String(code))
 
-    const response = await request.post<LoginResponse>('/auth/third/wechat/login', null, {
-      params: { code, state },
-    })
+    const { access_token, refresh_token } = await loginWithWechat(String(code), state ? String(state) : undefined)
 
-    if (response.data.success) {
-      const { access_token, refresh_token } = response.data.data
-
-      // 保存 token 到 localStorage
-      localStorage.setItem('access_token', JSON.stringify({
+    authStore.setLoginInfo({
+      access_token: {
         token: access_token.token,
         expire_at: access_token.expire_at,
-      }))
-      localStorage.setItem('refresh_token', JSON.stringify({
+      },
+      refresh_token: {
         token: refresh_token.token,
         expire_at: refresh_token.expire_at,
-      }))
+      },
+    })
 
-      // 同步到 store
-      authStore.setLoginInfo({
-        access_token: {
-          token: access_token.token,
-          expire_at: access_token.expire_at,
-        },
-        refresh_token: {
-          token: refresh_token.token,
-          expire_at: refresh_token.expire_at,
-        },
-      })
-
-      // 通知主窗口
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage({ type: 'wechat_login_success' }, '*')
-      }
-
-      status.value = 'success'
-      title.value = '登录成功'
-      subtitle.value = '即将关闭页面'
-      setTimeout(() => handleClose(), 3000)
-    } else {
-      status.value = 'error'
-      title.value = '登录失败'
-      subtitle.value = response.data.message || '请稍后重试'
+    // 通知主窗口
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'wechat_login_success' }, '*')
     }
-  } catch (error: any) {
+
+    status.value = 'success'
+    title.value = '登录成功'
+    subtitle.value = '即将关闭页面'
+    setTimeout(() => handleClose(), 3000)
+  } catch (error: unknown) {
     console.error('微信登录回调失败:', error)
     status.value = 'error'
     title.value = '登录失败'
-    subtitle.value = error.response?.data?.message || '网络错误，请稍后重试'
+    subtitle.value = error instanceof Error ? error.message : '网络错误，请稍后重试'
   }
 })
 
