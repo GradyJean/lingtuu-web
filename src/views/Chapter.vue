@@ -26,7 +26,11 @@ function menuClick(iconKey: string, isActive: boolean): void {
 <template>
   <WorkspaceLayout>
     <template #header>
-      <Header/>
+      <Header>
+        <template #header-left>
+          ddddd
+        </template>
+      </Header>
     </template>
     <template #footer>
       <Footer/>

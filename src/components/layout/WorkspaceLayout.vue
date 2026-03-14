@@ -33,8 +33,11 @@
 import {theme} from 'ant-design-vue'
 import {themeState} from '../../theme'
 import {themeMap} from '../../theme/theme'
+import {ref} from "vue";
 
 const {token} = theme.useToken()
+
+const sidebarSize = ref("40px")
 </script>
 
 <style scoped>
@@ -68,7 +71,7 @@ const {token} = theme.useToken()
 
 /* bottom bar */
 .footer {
-  height: 35px;
+  height: v-bind('sidebarSize');
   padding: 0;
 
   background: v-bind('token.colorBgLayout');
@@ -85,9 +88,9 @@ const {token} = theme.useToken()
 /* side bars */
 .left,
 .right {
-  width: 35px !important;
-  min-width: 35px !important;
-  max-width: 35px !important;
+  width: v-bind('sidebarSize') !important;
+  min-width: v-bind('sidebarSize') !important;
+  max-width: v-bind('sidebarSize') !important;
 
   background: v-bind('token.colorBgLayout');
 }
