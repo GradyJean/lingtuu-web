@@ -21,7 +21,7 @@ function handleMenuClick({key}: { key: string }) {
 <template>
   <div class="header-bar">
     <div class="header-left">
-      <!-- 预留位置 -->
+      <slot name="header-left"/>
     </div>
     <div class="header-right">
       <a-dropdown>
@@ -79,7 +79,7 @@ function handleMenuClick({key}: { key: string }) {
   transition: background-color 0.3s;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .user-dropdown:hover {
   background-color: v-bind('token.colorBorderSecondary');
 }

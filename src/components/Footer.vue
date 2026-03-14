@@ -15,7 +15,7 @@ const {token} = theme.useToken()
 </template>
 
 <style scoped>
-/* noinspection CssUnresolvedCustomProperty */
+
 .bottom-side {
   height: 100%;
   display: flex;
@@ -30,7 +30,7 @@ const {token} = theme.useToken()
   margin-right: 5px;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 a {
   color: v-bind('token.colorTextSecondary');
 }

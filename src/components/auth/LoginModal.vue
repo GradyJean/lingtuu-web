@@ -593,7 +593,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* noinspection CssUnresolvedCustomProperty */
+
 .login-modal {
   position: fixed;
   top: 0;
@@ -606,7 +606,7 @@ onMounted(() => {
   align-items: center;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .modal-mask {
   position: absolute;
   top: 0;
@@ -656,7 +656,7 @@ onMounted(() => {
   float: right;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .form-footer {
   text-align: center;
   margin-top: 16px;
@@ -684,18 +684,18 @@ onMounted(() => {
   cursor: pointer;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .third-icon {
   color: v-bind('token.colorTextSecondary');
   transition: color 0.3s;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .third-icon:hover {
   color: v-bind('token.colorPrimary');
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .platform-name {
   margin-top: 8px;
   font-size: 12px;

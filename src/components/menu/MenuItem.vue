@@ -56,7 +56,7 @@ const menuRadius = computed(() => `${ctx.token.value.borderRadiusSM}px`)
 </template>
 
 <style scoped>
-/* noinspection CssUnresolvedCustomProperty */
+
 .menu-item {
   width: 30px;
   height: 30px;
@@ -74,12 +74,12 @@ const menuRadius = computed(() => `${ctx.token.value.borderRadiusSM}px`)
   color 0.15s ease;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .menu-item:hover {
   background: v-bind(menuHoverBg);
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .menu-item.active {
   background: v-bind(menuActiveBg);
   color: v-bind(menuActiveColor);

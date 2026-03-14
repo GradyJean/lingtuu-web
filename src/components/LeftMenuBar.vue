@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {useRouter, useRoute} from 'vue-router'
-import {HomeOutlined, FileTextOutlined} from '@ant-design/icons-vue'
+import {useRoute, useRouter} from 'vue-router'
+import {FileTextOutlined, HomeOutlined} from '@ant-design/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -30,11 +30,16 @@ function navigateTo(path: string) {
 </template>
 
 <style scoped>
-.left-menu-bar{
+.left-menu-bar {
   width: 100%;
   min-height: 100%;
 }
+
 :deep(.ant-menu) {
   border-inline-end: none !important;
+}
+
+:deep(.ant-menu-item-selected) {
+  font-weight: bold;
 }
 </style>

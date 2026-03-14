@@ -44,7 +44,7 @@ const {token} = theme.useToken()
 .root {
   width: 100vw;
   height: 100vh;
-  /* noinspection CssUnresolvedCustomProperty */
+
   background: v-bind('token.colorBgLayout');
 }
 
@@ -57,7 +57,7 @@ const {token} = theme.useToken()
   padding: 0;
   position: relative;
   z-index: 10;
-  /* noinspection CssUnresolvedCustomProperty */
+
   background: v-bind('token.colorBgLayout');
 }
 
@@ -66,7 +66,7 @@ const {token} = theme.useToken()
   width: 200px !important;
   min-width: 200px !important;
   max-width: 200px !important;
-  /* noinspection CssUnresolvedCustomProperty */
+
   background: v-bind('token.colorBgLayout');
 }
 
@@ -74,7 +74,7 @@ const {token} = theme.useToken()
 .footer {
   height: 35px;
   padding: 0;
-  /* noinspection CssUnresolvedCustomProperty */
+
   background: v-bind('token.colorBgLayout');
 }
 
@@ -82,7 +82,7 @@ const {token} = theme.useToken()
 .main {
   flex: 1;
   min-height: 0;
-  /* noinspection CssUnresolvedCustomProperty */
+
   background: v-bind('token.colorBgContainer');
 }
 
@@ -90,7 +90,7 @@ const {token} = theme.useToken()
 .center {
   padding: 0 10px 0 5px;
   margin: 0;
-  /* noinspection CssUnresolvedCustomProperty */
+
   background: v-bind('token.colorBgLayout');
 }
 </style>

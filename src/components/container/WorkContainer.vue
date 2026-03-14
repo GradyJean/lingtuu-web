@@ -79,7 +79,7 @@ function onMainResize(e: { panes: any }): void {
 
 <style>
 /* 左右分隔（竖向） */
-/* noinspection CssUnresolvedCustomProperty */
+
 .splitpanes--vertical > .splitpanes__splitter {
   width: 5px;
   cursor: ew-resize;

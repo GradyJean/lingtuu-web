@@ -55,7 +55,7 @@ const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
       info: '#69B1FF'
     },
     bg: {
-      page: '#f1f1f1',
+      page: 'linear-gradient(to bottom, #f1f1f11f, #f1f1f180)',
       surface: '#FFFFFF',
       elevated: '#FFFFFF',
       muted: '#F7F9F8',

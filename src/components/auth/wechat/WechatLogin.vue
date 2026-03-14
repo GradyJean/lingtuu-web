@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* noinspection CssUnresolvedCustomProperty */
+
 .wechat-login {
   padding: 20px 0;
   text-align: center;
@@ -169,7 +169,7 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .back-icon {
   position: absolute;
   left: 0;
@@ -179,7 +179,7 @@ onBeforeUnmount(() => {
   transition: color 0.3s;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .back-icon:hover {
   color: v-bind('token.colorPrimary');
 }
@@ -196,13 +196,13 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .qr-loading p {
   margin-top: 16px;
   color: v-bind('token.colorTextSecondary');
 }
 
-/* noinspection CssUnresolvedCustomProperty */
+
 .qr-hint {
   color: v-bind('token.colorTextTertiary');
   font-size: 14px;
