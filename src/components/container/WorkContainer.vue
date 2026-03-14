@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import {uiStateStore} from '../../stores/ui'
-import {theme} from 'ant-design-vue'
 import PanelContainer from '../../components/container/PanelContainer.vue'
 import {Pane, Splitpanes} from '../../components/splitpanes'
 
 const uiStore = uiStateStore()
-const {token} = theme.useToken()
 
 // 监听窗口大小改变
 function onMainResize(e: { panes: any }): void {
@@ -38,16 +36,7 @@ function onMainResize(e: { panes: any }): void {
 </script>
 
 <template>
-  <div
-      class="workspace-root"
-      :style="{
-      '--splitpanes-pane-bg': token.colorBgContainer,
-      '--splitpanes-splitter-bg': token.colorBgLayout,
-      '--splitpanes-splitter-line': token.colorTextQuaternary,
-      '--splitpanes-splitter-line-hover': token.colorTextSecondary,
-      '--splitpanes-splitter-border': token.colorBorderSecondary
-    }"
-  >
+  <div class="workspace-root">
     <Splitpanes class="workspace-split" @resized="onMainResize">
       <Pane v-if="uiStore.windowPosition.left.display" :size="uiStore.windowPosition.left.size">
         <PanelContainer>

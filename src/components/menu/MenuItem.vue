@@ -41,6 +41,12 @@ const onClick = (): void => {
   ctx.activate(props.menuKey)
   props.onClick?.(props.menuKey, isActive.value)
 }
+
+const menuColor = computed(() => ctx.token.value.colorTextSecondary)
+const menuHoverBg = computed(() => ctx.token.value.colorBgTextHover)
+const menuActiveBg = computed(() => ctx.token.value.colorBgTextActive)
+const menuActiveColor = computed(() => ctx.token.value.colorText)
+const menuRadius = computed(() => `${ctx.token.value.borderRadiusSM}px`)
 </script>
 
 <template>
@@ -54,14 +60,14 @@ const onClick = (): void => {
 .menu-item {
   width: 30px;
   height: 30px;
-  border-radius: 4px;
+  border-radius: v-bind(menuRadius);
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   cursor: pointer;
-  color: var(--menu-color);
+  color: v-bind(menuColor);
   background: transparent;
 
   transition: background-color 0.15s ease,
@@ -70,13 +76,13 @@ const onClick = (): void => {
 
 /* noinspection CssUnresolvedCustomProperty */
 .menu-item:hover {
-  background: var(--menu-hover-bg);
+  background: v-bind(menuHoverBg);
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .menu-item.active {
-  background: var(--menu-active-bg);
-  color: var(--menu-active-color);
+  background: v-bind(menuActiveBg);
+  color: v-bind(menuActiveColor);
 }
 
 .menu-inner {

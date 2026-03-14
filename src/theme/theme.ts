@@ -46,16 +46,16 @@ type SemanticTheme = {
 const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
   light: {
     accent: {
-      primary: '#4CAF50',
-      primaryHover: '#66BB6A',
-      primaryActive: '#43A047',
-      success: '#52C41A',
+      primary: '#4096FF',
+      primaryHover: '#69B1FF',
+      primaryActive: '#1677FF',
+      success: '#1677FF',
       warning: '#FAAD14',
       error: '#FF4D4F',
-      info: '#1677FF'
+      info: '#69B1FF'
     },
     bg: {
-      page: '#F5F8F6',
+      page: '#f1f1f1',
       surface: '#FFFFFF',
       elevated: '#FFFFFF',
       muted: '#F7F9F8',
@@ -75,9 +75,9 @@ const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
       strong: 'rgba(0, 0, 0, 0.20)'
     },
     state: {
-      hover: 'rgba(0, 0, 0, 0.04)',
-      active: 'rgba(0, 0, 0, 0.08)',
-      focus: 'rgba(76, 175, 80, 0.22)'
+      hover: 'rgba(64, 150, 255, 0.08)',
+      active: 'rgba(64, 150, 255, 0.16)',
+      focus: 'rgba(64, 150, 255, 0.22)'
     },
     shadow: {
       sm: '0 1px 2px rgba(0, 0, 0, 0.06)',
@@ -86,13 +86,13 @@ const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
   },
   dark: {
     accent: {
-      primary: '#6BCB77',
-      primaryHover: '#82D88D',
-      primaryActive: '#58B866',
-      success: '#73D13D',
+      primary: '#4096FF',
+      primaryHover: '#69B1FF',
+      primaryActive: '#1677FF',
+      success: '#1677FF',
       warning: '#FFC53D',
       error: '#FF7875',
-      info: '#4096FF'
+      info: '#91CAFF'
     },
     bg: {
       page: '#111417',
@@ -115,9 +115,9 @@ const semanticThemeMap: Record<ThemeKey, SemanticTheme> = {
       strong: 'rgba(255, 255, 255, 0.24)'
     },
     state: {
-      hover: 'rgba(255, 255, 255, 0.08)',
-      active: 'rgba(255, 255, 255, 0.14)',
-      focus: 'rgba(107, 203, 119, 0.30)'
+      hover: 'rgba(64, 150, 255, 0.12)',
+      active: 'rgba(64, 150, 255, 0.20)',
+      focus: 'rgba(64, 150, 255, 0.30)'
     },
     shadow: {
       sm: '0 1px 2px rgba(0, 0, 0, 0.35)',
@@ -161,9 +161,9 @@ function createThemeConfig(mode: ThemeKey): Record<string, unknown> {
       controlItemBgActive: s.state.active,
       controlItemBgActiveHover: s.state.active,
 
-      borderRadius: 10,
+      borderRadius: 6,
       borderRadiusSM: 6,
-      borderRadiusLG: 14,
+      borderRadiusLG: 6,
       fontSize: 14,
       fontSizeSM: 12,
       fontSizeLG: 16,

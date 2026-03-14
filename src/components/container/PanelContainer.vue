@@ -5,16 +5,7 @@ const {token} = theme.useToken()
 </script>
 
 <template>
-  <div
-      class="panel-container"
-      :style="{
-      '--panel-bg': token.colorBgContainer,
-      '--panel-border': token.colorBorderSecondary,
-      '--panel-text': token.colorText,
-      '--panel-scrollbar': token.colorTextQuaternary,
-      '--panel-scrollbar-hover': token.colorTextTertiary
-    }"
-  >
+  <div class="panel-container">
     <div class="panel-viewport">
       <slot/>
     </div>
@@ -28,15 +19,14 @@ const {token} = theme.useToken()
   box-sizing: border-box;
   white-space: nowrap;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--panel-bg);
-  border-radius: 5px;
+  background: v-bind('token.colorBgContainer');
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
 
   overflow: hidden;
 
   /* noinspection CssUnresolvedCustomProperty */
-  border: var(--panel-border) solid 1px;
-  /* noinspection CssUnresolvedCustomProperty */
-  color: var(--panel-text);
+  border: v-bind('token.colorBorderSecondary') solid 1px;
+  color: v-bind('token.colorText');
 }
 
 .panel-viewport {
@@ -58,12 +48,12 @@ const {token} = theme.useToken()
 
 /* noinspection CssUnresolvedCustomProperty */
 .panel-viewport::-webkit-scrollbar-thumb {
-  background-color: var(--panel-scrollbar);
-  border-radius: 5px;
+  background-color: v-bind('token.colorTextQuaternary');
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .panel-viewport::-webkit-scrollbar-thumb:hover {
-  background-color: var(--panel-scrollbar-hover);
+  background-color: v-bind('token.colorTextTertiary');
 }
 </style>

@@ -52,15 +52,7 @@ provide('menuBar', {
 </script>
 
 <template>
-  <div
-      class="menu-bar"
-      :style="{
-      '--menu-color': token.colorTextSecondary,
-      '--menu-active-color': token.colorText,
-      '--menu-hover-bg': token.colorBgTextHover,
-      '--menu-active-bg': token.colorBgTextActive
-    }"
-  >
+  <div class="menu-bar">
     <slot/>
   </div>
 </template>

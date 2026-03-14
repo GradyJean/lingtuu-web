@@ -10,6 +10,7 @@ import {
   useSlots,
   watch
 } from 'vue'
+import { theme } from 'ant-design-vue'
 
 const emit = defineEmits([
   'ready',
@@ -31,6 +32,8 @@ const props = defineProps({
   firstSplitter: { type: Boolean, default: false },
   manualSize: { type: Boolean, default: true }
 })
+
+const { token } = theme.useToken()
 
 const slots = useSlots()
 const panes = ref([])
@@ -685,11 +688,11 @@ provide('onPaneClick', onPaneClick)
 
 .default-theme {
   &.splitpanes .splitpanes__pane {
-    background-color: var(--splitpanes-pane-bg, #f2f2f2);
+    background-color: v-bind('token.colorBgContainer');
   }
 
   &.splitpanes .splitpanes__splitter {
-    background-color: var(--splitpanes-splitter-bg, #fff);
+    background-color: v-bind('token.colorBgLayout');
     box-sizing: border-box;
     position: relative;
     flex-shrink: 0;
@@ -700,12 +703,12 @@ provide('onPaneClick', onPaneClick)
       position: absolute;
       top: 50%;
       left: 50%;
-      background-color: var(--splitpanes-splitter-line, rgba(0, 0, 0, 0.15));
+      background-color: v-bind('token.colorTextQuaternary');
       transition: background-color 0.3s;
     }
     &:hover:before,
     &:hover:after {
-      background-color: var(--splitpanes-splitter-line-hover, rgba(0, 0, 0, 0.25));
+      background-color: v-bind('token.colorTextSecondary');
     }
     &:first-child {
       cursor: auto;
@@ -718,7 +721,7 @@ provide('onPaneClick', onPaneClick)
   &.splitpanes--vertical > .splitpanes__splitter,
   .splitpanes--vertical > .splitpanes__splitter {
     width: 7px;
-    border-left: 1px solid var(--splitpanes-splitter-border, #eee);
+    border-left: 1px solid v-bind('token.colorBorderSecondary');
     margin-left: -1px;
 
     &:before,
@@ -738,7 +741,7 @@ provide('onPaneClick', onPaneClick)
   &.splitpanes--horizontal > .splitpanes__splitter,
   .splitpanes--horizontal > .splitpanes__splitter {
     height: 7px;
-    border-top: 1px solid var(--splitpanes-splitter-border, #eee);
+    border-top: 1px solid v-bind('token.colorBorderSecondary');
     margin-top: -1px;
 
     &:before,

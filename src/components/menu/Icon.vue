@@ -19,9 +19,7 @@ const defaultStyle = computed(() => {
     return {}
   }
   return {
-    '--icon-color': token.value.colorTextSecondary,
-    '--icon-hover-bg': token.value.colorBgTextHover,
-    color: 'var(--icon-color)'
+    color: token.value.colorTextSecondary
   }
 })
 </script>
@@ -47,15 +45,14 @@ const defaultStyle = computed(() => {
   justify-content: center;
   line-height: 1;
 
-  border-radius: 4px;
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
   cursor: pointer;
 
   transition: background-color 0.15s ease;
 }
 
-/* noinspection CssUnresolvedCustomProperty */
 .icon:hover {
-  background-color: var(--icon-hover-bg);
+  background-color: v-bind('token.colorBgTextHover');
 }
 
 /* SVG 永远跟随 currentColor */

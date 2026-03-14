@@ -1,12 +1,5 @@
 <template>
-  <div
-    class="wechat-login"
-    :style="{
-      '--wechat-text-secondary': token.colorTextSecondary,
-      '--wechat-text-tertiary': token.colorTextTertiary,
-      '--wechat-link': token.colorPrimary
-    }"
-  >
+  <div class="wechat-login">
     <div class="qr-header">
       <ArrowLeftOutlined class="back-icon" @click="$emit('back')" />
       <span>微信扫码登录</span>
@@ -182,13 +175,13 @@ onBeforeUnmount(() => {
   left: 0;
   cursor: pointer;
   font-size: 18px;
-  color: var(--wechat-text-secondary);
+  color: v-bind('token.colorTextSecondary');
   transition: color 0.3s;
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .back-icon:hover {
-  color: var(--wechat-link);
+  color: v-bind('token.colorPrimary');
 }
 
 .qr-container {
@@ -206,12 +199,12 @@ onBeforeUnmount(() => {
 /* noinspection CssUnresolvedCustomProperty */
 .qr-loading p {
   margin-top: 16px;
-  color: var(--wechat-text-secondary);
+  color: v-bind('token.colorTextSecondary');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .qr-hint {
-  color: var(--wechat-text-tertiary);
+  color: v-bind('token.colorTextTertiary');
   font-size: 14px;
 }
 </style>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import LoginModal from './components/auth/LoginModal.vue'
+import {theme} from 'ant-design-vue'
 import {themeMap} from "./theme/theme.ts";
 import {themeState} from "./theme";
+
+const {token} = theme.useToken()
 </script>
 
 <template>
@@ -19,6 +22,6 @@ main {
 }
 :deep(.ant-menu-item),
 :deep(.ant-btn ) {
-  border-radius: 5px;
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
 }
 </style>

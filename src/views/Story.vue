@@ -1,18 +1,5 @@
 <template>
-  <div
-      class="story-page"
-      :style="{
-      '--story-panel-bg': token.colorBgContainer,
-      '--story-text': token.colorText,
-      '--story-text-secondary': token.colorTextSecondary,
-      '--story-border': token.colorBorderSecondary,
-      '--story-hover-bg': token.colorBgTextHover,
-      '--story-primary': token.colorPrimary,
-      '--story-primary-hover': token.colorPrimaryHover,
-      '--story-warning': token.colorWarning,
-      '--story-on-primary': token.colorTextLightSolid
-    }"
-  >
+  <div class="story-page">
     <!-- 顶部区域 -->
     <div class="story-header">
       <div>
@@ -322,7 +309,7 @@ onMounted(() => {
 .page-title {
   font-size: 24px;
   font-weight: 600;
-  color: var(--story-text);
+  color: v-bind('token.colorText');
   margin: 0;
 }
 
@@ -335,7 +322,7 @@ onMounted(() => {
 /* noinspection CssUnresolvedCustomProperty */
 .story-toolbar {
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--story-border);
+  border-bottom: 1px solid v-bind('token.colorBorderSecondary');
   margin-bottom: 24px;
 }
 
@@ -347,7 +334,7 @@ onMounted(() => {
 /* noinspection CssUnresolvedCustomProperty */
 .tab {
   font-size: 16px;
-  color: var(--story-text-secondary);
+  color: v-bind('token.colorTextSecondary');
   cursor: pointer;
   padding: 8px 0;
   position: relative;
@@ -357,7 +344,7 @@ onMounted(() => {
 /* noinspection CssUnresolvedCustomProperty */
 .tab:hover,
 .tab.active {
-  color: var(--story-primary);
+  color: v-bind('token.colorPrimary');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
@@ -368,8 +355,8 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--story-primary);
-  border-radius: 2px 2px 0 0;
+  background: v-bind('token.colorPrimary');
+  border-radius: v-bind('`${token.borderRadiusSM}px`') v-bind('`${token.borderRadiusSM}px`') 0 0;
 }
 
 .action-buttons {
@@ -384,15 +371,15 @@ onMounted(() => {
 
 /* noinspection CssUnresolvedCustomProperty */
 .btn-primary {
-  background: var(--story-primary);
-  color: var(--story-on-primary);
-  border-color: var(--story-primary);
+  background: v-bind('token.colorPrimary');
+  color: v-bind('token.colorTextLightSolid');
+  border-color: v-bind('token.colorPrimary');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .btn-primary:hover {
-  background: var(--story-primary-hover) !important;
-  border-color: var(--story-primary-hover) !important;
+  background: v-bind('token.colorPrimaryHover') !important;
+  border-color: v-bind('token.colorPrimaryHover') !important;
 }
 
 .view-toggle :deep(.ant-btn) {
@@ -409,9 +396,9 @@ onMounted(() => {
 
 /* noinspection CssUnresolvedCustomProperty */
 .story-card {
-  background: var(--story-panel-bg);
-  border-radius: 10px;
-  border: 1px solid var(--story-border);
+  background: v-bind('token.colorBgContainer');
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
+  border: 1px solid v-bind('token.colorBorderSecondary');
   overflow: hidden;
   transition: box-shadow 0.3s, transform 0.3s;
   cursor: pointer;
@@ -419,7 +406,7 @@ onMounted(() => {
 
 /* noinspection CssUnresolvedCustomProperty */
 .story-card:hover {
-  box-shadow: 0 4px 12px var(--story-border);
+  box-shadow: 0 4px 12px v-bind('token.colorBorderSecondary');
   transform: translateY(-2px);
 }
 
@@ -429,38 +416,38 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid var(--story-border);
+  border-bottom: 1px solid v-bind('token.colorBorderSecondary');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .card-tag {
-  color: var(--story-on-primary);
+  color: v-bind('token.colorTextLightSolid');
   font-size: 12px;
   padding: 2px 3px;
-  border-radius: 4px;
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .card-tag--status {
-  background: var(--story-primary);
+  background: v-bind('token.colorPrimary');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .card-tag--type {
-  background: var(--story-warning);
+  background: v-bind('token.colorWarning');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .card-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--story-text);
+  color: v-bind('token.colorText');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .card-body {
   height: 160px;
-  background: var(--story-hover-bg);
+  background: v-bind('token.colorBgTextHover');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
@@ -469,13 +456,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-top: 1px solid var(--story-border);
+  border-top: 1px solid v-bind('token.colorBorderSecondary');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .card-date {
   font-size: 12px;
-  color: var(--story-text-secondary);
+  color: v-bind('token.colorTextSecondary');
 }
 
 .card-actions {

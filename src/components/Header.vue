@@ -19,9 +19,7 @@ function handleMenuClick({key}: { key: string }) {
 </script>
 
 <template>
-  <div class="header-bar" :style="{
-      '--header-hover': token.colorBorderSecondary,
-    }">
+  <div class="header-bar">
     <div class="header-left">
       <!-- 预留位置 -->
     </div>
@@ -83,6 +81,6 @@ function handleMenuClick({key}: { key: string }) {
 
 /* noinspection CssUnresolvedCustomProperty */
 .user-dropdown:hover {
-  background-color: var(--header-hover);
+  background-color: v-bind('token.colorBorderSecondary');
 }
 </style>

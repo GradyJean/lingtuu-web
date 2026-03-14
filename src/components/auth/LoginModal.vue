@@ -1,50 +1,45 @@
 <template>
   <div
-    v-if="shouldShowLogin"
-    class="login-modal"
-    :style="{
-      '--login-mask': token.colorBgMask,
-      '--login-text-secondary': token.colorTextSecondary,
-      '--login-link': token.colorPrimary
-    }"
+      v-if="shouldShowLogin"
+      class="login-modal"
   >
     <div class="modal-mask"></div>
     <div class="modal-container">
-      <a-card :title="cardTitle" :bordered="false" style="width: 400px">
+      <a-card :title="cardTitle" class="login-card">
         <!-- 登录表单 -->
         <div v-if="currentView === 'login' && !showWechat" class="form-container">
           <a-form :model="loginForm" layout="vertical" @finish="handleLogin">
             <a-form-item
-              name="identifier"
-              label="手机号/邮箱"
-              :rules="[{ required: true, message: '请输入手机号或邮箱' }]"
+                name="identifier"
+                label="手机号/邮箱"
+                :rules="[{ required: true, message: '请输入手机号或邮箱' }]"
             >
               <a-input
-                v-model:value="loginForm.identifier"
-                placeholder="请输入手机号或邮箱"
-                size="large"
+                  v-model:value="loginForm.identifier"
+                  placeholder="请输入手机号或邮箱"
+                  size="large"
               >
                 <template #prefix>
-                  <UserOutlined />
+                  <UserOutlined/>
                 </template>
               </a-input>
             </a-form-item>
 
             <a-form-item
-              v-if="!loginForm.verify_code_login"
-              name="credential"
-              label="密码"
-              :rules="[
+                v-if="!loginForm.verify_code_login"
+                name="credential"
+                label="密码"
+                :rules="[
                 { required: !loginForm.verify_code_login, message: '请输入密码' }
               ]"
             >
               <a-input-password
-                v-model:value="loginForm.credential"
-                placeholder="请输入密码"
-                size="large"
+                  v-model:value="loginForm.credential"
+                  placeholder="请输入密码"
+                  size="large"
               >
                 <template #prefix>
-                  <LockOutlined />
+                  <LockOutlined/>
                 </template>
               </a-input-password>
             </a-form-item>
@@ -53,22 +48,23 @@
               <a-row :gutter="8">
                 <a-col :span="16">
                   <a-form-item
-                    name="verify_code"
-                    :rules="[{ required: true, message: '请输入验证码' }]"
+                      name="verify_code"
+                      :rules="[{ required: true, message: '请输入验证码' }]"
                   >
                     <a-input
-                      v-model:value="loginForm.verify_code"
-                      placeholder="验证码"
-                      size="large"
+                        v-model:value="loginForm.verify_code"
+                        placeholder="验证码"
+                        size="large"
                     />
                   </a-form-item>
                 </a-col>
                 <a-col :span="8">
                   <a-button
-                    :loading="sendingCode"
-                    :disabled="!canSendCode || countdown > 0"
-                    @click="sendverify_code"
-                    block
+                      :loading="sendingCode"
+                      :disabled="!canSendCode || countdown > 0"
+                      @click="sendverify_code"
+                      size="large"
+                      block
                   >
                     {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
                   </a-button>
@@ -102,13 +98,13 @@
             <a-divider>其他登录方式</a-divider>
             <div class="third-icons">
               <div
-                v-for="platform in thirdPlatforms"
-                :key="platform.platform"
-                class="third-icon-wrapper"
-                @click="handleShowWechat"
+                  v-for="platform in thirdPlatforms"
+                  :key="platform.platform"
+                  class="third-icon-wrapper"
+                  @click="handleShowWechat"
               >
                 <a class="third-icon">
-                  <component :is="getPlatformIcon(platform.platform)" :style="{ fontSize: '24px' }" />
+                  <component :is="getPlatformIcon(platform.platform)" :style="{ fontSize: '24px' }"/>
                 </a>
                 <span class="platform-name">{{ platform.name }}</span>
               </div>
@@ -117,62 +113,62 @@
         </div>
 
         <!-- 微信登录 -->
-        <WechatLogin v-else-if="showWechat" @back="closeWechat" />
+        <WechatLogin v-else-if="showWechat" @back="closeWechat"/>
 
         <!-- 注册表单 -->
         <div v-else-if="currentView === 'register'" class="form-container">
           <a-form :model="registerForm" layout="vertical" @finish="handleRegister">
             <a-form-item
-              name="identifier"
-              label="手机号/邮箱"
-              :rules="[{ required: true, message: '请输入手机号或邮箱' }]"
+                name="identifier"
+                label="手机号/邮箱"
+                :rules="[{ required: true, message: '请输入手机号或邮箱' }]"
             >
               <a-input
-                v-model:value="registerForm.identifier"
-                placeholder="请输入手机号或邮箱"
-                size="large"
-                @blur="checkIdentifierExists"
+                  v-model:value="registerForm.identifier"
+                  placeholder="请输入手机号或邮箱"
+                  size="large"
+                  @blur="checkIdentifierExists"
               >
                 <template #prefix>
-                  <UserOutlined />
+                  <UserOutlined/>
                 </template>
               </a-input>
             </a-form-item>
 
             <a-form-item
-              name="credential"
-              label="密码"
-              :rules="[
+                name="credential"
+                label="密码"
+                :rules="[
                 { required: true, message: '请输入密码' },
                 { min: 6, message: '密码至少 6 位' }
               ]"
             >
               <a-input-password
-                v-model:value="registerForm.credential"
-                placeholder="请输入密码"
-                size="large"
+                  v-model:value="registerForm.credential"
+                  placeholder="请输入密码"
+                  size="large"
               >
                 <template #prefix>
-                  <LockOutlined />
+                  <LockOutlined/>
                 </template>
               </a-input-password>
             </a-form-item>
 
             <a-form-item
-              name="confirmPassword"
-              label="确认密码"
-              :rules="[
+                name="confirmPassword"
+                label="确认密码"
+                :rules="[
                 { required: true, message: '请确认密码' },
                 { validator: validateConfirmPassword }
               ]"
             >
               <a-input-password
-                v-model:value="registerForm.confirmPassword"
-                placeholder="请确认密码"
-                size="large"
+                  v-model:value="registerForm.confirmPassword"
+                  placeholder="请确认密码"
+                  size="large"
               >
                 <template #prefix>
-                  <LockOutlined />
+                  <LockOutlined/>
                 </template>
               </a-input-password>
             </a-form-item>
@@ -181,22 +177,23 @@
               <a-row :gutter="8">
                 <a-col :span="16">
                   <a-form-item
-                    name="verify_code"
-                    :rules="[{ required: true, message: '请输入验证码' }]"
+                      name="verify_code"
+                      :rules="[{ required: true, message: '请输入验证码' }]"
                   >
                     <a-input
-                      v-model:value="registerForm.verify_code"
-                      placeholder="验证码"
-                      size="large"
+                        v-model:value="registerForm.verify_code"
+                        placeholder="验证码"
+                        size="large"
                     />
                   </a-form-item>
                 </a-col>
                 <a-col :span="8">
                   <a-button
-                    :loading="sendingCode"
-                    :disabled="!canSendCode || countdown > 0"
-                    @click="sendverify_code"
-                    block
+                      :loading="sendingCode"
+                      :disabled="!canSendCode || countdown > 0"
+                      @click="sendverify_code"
+                      size="large"
+                      block
                   >
                     {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
                   </a-button>
@@ -221,36 +218,36 @@
         <div v-else-if="currentView === 'forgot'" class="form-container">
           <a-form :model="forgotForm" layout="vertical" @finish="handleForgotPassword">
             <a-form-item
-              name="identifier"
-              label="手机号/邮箱"
-              :rules="[{ required: true, message: '请输入手机号或邮箱' }]"
+                name="identifier"
+                label="手机号/邮箱"
+                :rules="[{ required: true, message: '请输入手机号或邮箱' }]"
             >
               <a-input
-                v-model:value="forgotForm.identifier"
-                placeholder="请输入绑定的手机号或邮箱"
-                size="large"
+                  v-model:value="forgotForm.identifier"
+                  placeholder="请输入绑定的手机号或邮箱"
+                  size="large"
               >
                 <template #prefix>
-                  <UserOutlined />
+                  <UserOutlined/>
                 </template>
               </a-input>
             </a-form-item>
 
             <a-form-item
-              name="credential"
-              label="新密码"
-              :rules="[
+                name="credential"
+                label="新密码"
+                :rules="[
                 { required: true, message: '请输入新密码' },
                 { min: 6, message: '密码至少 6 位' }
               ]"
             >
               <a-input-password
-                v-model:value="forgotForm.credential"
-                placeholder="请输入新密码"
-                size="large"
+                  v-model:value="forgotForm.credential"
+                  placeholder="请输入新密码"
+                  size="large"
               >
                 <template #prefix>
-                  <LockOutlined />
+                  <LockOutlined/>
                 </template>
               </a-input-password>
             </a-form-item>
@@ -259,22 +256,23 @@
               <a-row :gutter="8">
                 <a-col :span="16">
                   <a-form-item
-                    name="verify_code"
-                    :rules="[{ required: true, message: '请输入验证码' }]"
+                      name="verify_code"
+                      :rules="[{ required: true, message: '请输入验证码' }]"
                   >
                     <a-input
-                      v-model:value="forgotForm.verify_code"
-                      placeholder="验证码"
-                      size="large"
+                        v-model:value="forgotForm.verify_code"
+                        placeholder="验证码"
+                        size="large"
                     />
                   </a-form-item>
                 </a-col>
                 <a-col :span="8">
                   <a-button
-                    :loading="sendingCode"
-                    :disabled="!canSendCode || countdown > 0"
-                    @click="sendverify_code"
-                    block
+                      :loading="sendingCode"
+                      :disabled="!canSendCode || countdown > 0"
+                      @click="sendverify_code"
+                      size="large"
+                      block
                   >
                     {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
                   </a-button>
@@ -299,18 +297,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { message, theme } from 'ant-design-vue'
-import { UserOutlined, LockOutlined, WechatOutlined, AlipayOutlined } from '@ant-design/icons-vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../../stores/auth.ts'
+import {ref, reactive, computed, onMounted, watch} from 'vue'
+import {message, theme} from 'ant-design-vue'
+import {UserOutlined, LockOutlined, WechatOutlined, AlipayOutlined} from '@ant-design/icons-vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useAuthStore} from '../../stores/auth.ts'
 import request from '../../utils/request.ts'
 import WechatLogin from './wechat/WechatLogin.vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
-const { token } = theme.useToken()
+const {token} = theme.useToken()
 
 // 判断是否显示登录框：未登录 且 当前路由需要认证
 const shouldShowLogin = computed(() => {
@@ -377,9 +375,9 @@ function switchView(view: 'login' | 'register' | 'forgot') {
   currentView.value = view
   showWechat.value = false
   // 清空表单
-  Object.assign(loginForm, { identifier: '', credential: '', verify_code_login: false, verify_code: '' })
-  Object.assign(registerForm, { identifier: '', credential: '', confirmPassword: '', verify_code: '' })
-  Object.assign(forgotForm, { identifier: '', credential: '', verify_code: '' })
+  Object.assign(loginForm, {identifier: '', credential: '', verify_code_login: false, verify_code: ''})
+  Object.assign(registerForm, {identifier: '', credential: '', confirmPassword: '', verify_code: ''})
+  Object.assign(forgotForm, {identifier: '', credential: '', verify_code: ''})
 }
 
 // 显示微信登录
@@ -398,7 +396,7 @@ function closeWechat() {
 function checkIdentifierFormat(identifier: string): 'PHONE_NUMBER' | 'EMAIL' | null {
   const phoneRegex = /^1[3-9]\d{9}$/
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  
+
   if (phoneRegex.test(identifier)) return 'PHONE_NUMBER'
   if (emailRegex.test(identifier)) return 'EMAIL'
   return null
@@ -408,13 +406,13 @@ function checkIdentifierFormat(identifier: string): 'PHONE_NUMBER' | 'EMAIL' | n
 watch(() => [loginForm.identifier, registerForm.identifier, forgotForm.identifier], () => {
   const identifier = loginForm.identifier || registerForm.identifier || forgotForm.identifier
   canSendCode.value = !!checkIdentifierFormat(identifier)
-}, { immediate: true })
+}, {immediate: true})
 
 // 发送验证码
 async function sendverify_code() {
   const identifier = loginForm.identifier || registerForm.identifier || forgotForm.identifier
   const identifierType = checkIdentifierFormat(identifier)
-  
+
   if (!identifierType) {
     message.warning('请输入正确的手机号或邮箱')
     return
@@ -426,7 +424,7 @@ async function sendverify_code() {
       identifier,
       identifierType,
     })
-    
+
     if (res.data.success) {
       message.success('验证码已发送')
       // 倒计时
@@ -451,15 +449,15 @@ async function sendverify_code() {
 async function checkIdentifierExists() {
   const identifier = registerForm.identifier
   if (!identifier) return
-  
+
   const identifierType = checkIdentifierFormat(identifier)
   if (!identifierType) return
 
   try {
     const res = await request.get('/auth/identifier/exists', {
-      params: { identifier },
+      params: {identifier},
     })
-    
+
     if (res.data.success && res.data.data) {
       message.warning('该账号已注册')
     }
@@ -481,7 +479,7 @@ async function handleLogin() {
   loggingIn.value = true
   try {
     const identifierType = checkIdentifierFormat(loginForm.identifier)
-    
+
     const res = await request.post('/auth/login', {
       identifier: loginForm.identifier,
       credential: loginForm.credential,
@@ -517,7 +515,7 @@ async function handleRegister() {
   registering.value = true
   try {
     const identifierType = checkIdentifierFormat(registerForm.identifier)
-    
+
     const res = await request.post('/auth/register', {
       identifier: registerForm.identifier,
       credential: registerForm.credential,
@@ -543,7 +541,7 @@ async function handleForgotPassword() {
   resetting.value = true
   try {
     const identifierType = checkIdentifierFormat(forgotForm.identifier)
-    
+
     const res = await request.post('/auth/credential/reset', {
       identifier: forgotForm.identifier,
       credential: forgotForm.credential,
@@ -578,10 +576,10 @@ watch(() => authStore.isLoggedIn, (newVal) => {
   if (newVal) {
     const redirect = sessionStorage.getItem('login_redirect_from') || '/'
     sessionStorage.removeItem('login_redirect_from')
-    
+
     showWechat.value = false
     currentView.value = 'login'
-    
+
     // 跳转到原页面
     if (redirect !== route.fullPath) {
       router.push(redirect)
@@ -615,13 +613,39 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--login-mask);
+  background: v-bind('token.colorBgMask');
   backdrop-filter: blur(4px);
 }
 
 .modal-container {
   position: relative;
   z-index: 10000;
+}
+
+.login-card {
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
+  width: 400px;
+}
+
+.login-card :deep(.ant-card-head) {
+  border-top-left-radius: v-bind('`${token.borderRadiusSM}px`');
+  border-top-right-radius: v-bind('`${token.borderRadiusSM}px`');
+}
+
+.login-card :deep(.ant-card-body) {
+  border-bottom-left-radius: v-bind('`${token.borderRadiusSM}px`');
+  border-bottom-right-radius: v-bind('`${token.borderRadiusSM}px`');
+}
+
+.login-card :deep(.ant-input),
+.login-card :deep(.ant-input-affix-wrapper),
+.login-card :deep(.ant-input-group-addon),
+.login-card :deep(.ant-btn) {
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
+}
+
+.login-card :deep(.ant-input-search-button) {
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
 }
 
 .form-container {
@@ -636,7 +660,7 @@ onMounted(() => {
 .form-footer {
   text-align: center;
   margin-top: 16px;
-  color: var(--login-text-secondary);
+  color: v-bind('token.colorTextSecondary');
 }
 
 .form-footer a {
@@ -662,19 +686,19 @@ onMounted(() => {
 
 /* noinspection CssUnresolvedCustomProperty */
 .third-icon {
-  color: var(--login-text-secondary);
+  color: v-bind('token.colorTextSecondary');
   transition: color 0.3s;
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .third-icon:hover {
-  color: var(--login-link);
+  color: v-bind('token.colorPrimary');
 }
 
 /* noinspection CssUnresolvedCustomProperty */
 .platform-name {
   margin-top: 8px;
   font-size: 12px;
-  color: var(--login-text-secondary);
+  color: v-bind('token.colorTextSecondary');
 }
 </style>

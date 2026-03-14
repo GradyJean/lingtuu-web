@@ -1,12 +1,5 @@
 <template>
-  <a-layout class="root" :style="{
-      '--layout-bg': token.colorBgLayout,
-      '--layout-bg-container': token.colorBgContainer,
-      '--layout-border': token.colorBorderSecondary,
-      '--layout-text': token.colorText,
-      '--layout-scrollbar': token.colorTextQuaternary,
-      '--layout-scrollbar-hover': token.colorTextTertiary
-    }">
+  <a-layout class="root">
     <!-- top -->
     <a-layout-header class="header">
       <slot name="header"/>
@@ -52,7 +45,7 @@ const {token} = theme.useToken()
   width: 100vw;
   height: 100vh;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 /* top bar */
@@ -65,7 +58,7 @@ const {token} = theme.useToken()
   position: relative;
   z-index: 10;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 .left {
@@ -74,7 +67,7 @@ const {token} = theme.useToken()
   min-width: 200px !important;
   max-width: 200px !important;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 /* bottom bar */
@@ -82,7 +75,7 @@ const {token} = theme.useToken()
   height: 35px;
   padding: 0;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 /* middle layout */
@@ -90,7 +83,7 @@ const {token} = theme.useToken()
   flex: 1;
   min-height: 0;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg-container);
+  background: v-bind('token.colorBgContainer');
 }
 
 /* center content */
@@ -98,6 +91,6 @@ const {token} = theme.useToken()
   padding: 0 10px 0 5px;
   margin: 0;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 </style>

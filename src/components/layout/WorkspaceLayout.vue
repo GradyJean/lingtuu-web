@@ -1,16 +1,6 @@
 <template>
   <a-config-provider :theme="themeMap[themeState.mode]">
-    <a-layout class="root"
-              :style="{
-      '--panel-bg': token.colorBgContainer,
-      '--panel-border': token.colorBorderSecondary,
-      '--panel-text': token.colorText,
-      '--panel-scrollbar': token.colorTextQuaternary,
-      '--panel-scrollbar-hover': token.colorTextTertiary,
-      '--layout-bg': token.colorBgLayout,
-      '--layout-bg-container': token.colorBgContainer,
-    }"
-    >
+    <a-layout class="root">
       <!-- top -->
       <a-layout-header class="header">
         <slot name="header"/>
@@ -60,7 +50,7 @@ const {token} = theme.useToken()
   width: 100vw;
   height: 100vh;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 /* top bar */
@@ -73,7 +63,7 @@ const {token} = theme.useToken()
   padding: 0;
   position: relative;
   z-index: 10;
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 /* bottom bar */
@@ -81,7 +71,7 @@ const {token} = theme.useToken()
   height: 35px;
   padding: 0;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 /* middle layout */
@@ -89,7 +79,7 @@ const {token} = theme.useToken()
   flex: 1;
   min-height: 0;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg-container);
+  background: v-bind('token.colorBgContainer');
 }
 
 /* side bars */
@@ -99,7 +89,7 @@ const {token} = theme.useToken()
   min-width: 35px !important;
   max-width: 35px !important;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 
 /* center content */
@@ -108,6 +98,6 @@ const {token} = theme.useToken()
   margin: 0;
   overflow: auto;
   /* noinspection CssUnresolvedCustomProperty */
-  background: var(--layout-bg);
+  background: v-bind('token.colorBgLayout');
 }
 </style>
