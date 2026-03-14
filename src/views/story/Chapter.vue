@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {ref} from 'vue'
 import WorkContainer from '@components/container/WorkContainer.vue'
 import {uiStateStore} from '@stores/ui.ts'
 import MenuBar from '@components/menu/MenuBar.vue'
@@ -6,9 +7,11 @@ import MenuItem from '@components/menu/MenuItem.vue'
 import WorkspaceLayout from "@components/layout/WorkspaceLayout.vue";
 import Header from "@components/Header.vue";
 import Footer from "@components/Footer.vue";
-import TiptapEditor from "@components/editor/TiptapEditor.vue";
+import Editor from "@components/editor/Editor.vue";
+import type {JSONContent} from '@tiptap/vue-3'
 
 const uiStore = uiStateStore()
+const chapterContent = ref('<h1>第一章</h1><p></p>')
 
 function menuActive(iconKey: string, isActive: boolean): void {
   let windowPosition: 'left' | 'right' = 'left'
@@ -20,6 +23,10 @@ function menuActive(iconKey: string, isActive: boolean): void {
       windowPosition = 'right'
   }
   uiStore.windowShow(windowPosition, isActive)
+}
+
+function handleEditorSave(payload: { html: string; text: string; json: JSONContent }): void {
+  console.log('editor save payload', payload)
 }
 </script>
 
@@ -49,7 +56,7 @@ function menuActive(iconKey: string, isActive: boolean): void {
       <WorkContainer>
         <template #left> left</template>
         <template #center>
-          <TiptapEditor/>
+          <Editor v-model="chapterContent" @save="handleEditorSave"/>
         </template>
         <template #right>
           right

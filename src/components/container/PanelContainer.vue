@@ -16,8 +16,10 @@ const {token} = theme.useToken()
 .panel-container {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   box-sizing: border-box;
-  white-space: nowrap;
 
   background: v-bind('token.colorBgContainer');
   border-radius: v-bind('`${token.borderRadiusSM}px`');
@@ -32,6 +34,10 @@ const {token} = theme.useToken()
 .panel-viewport {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   box-sizing: border-box;
 }
 </style>

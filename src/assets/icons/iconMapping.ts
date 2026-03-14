@@ -1,5 +1,6 @@
 const modules = import.meta.glob('./*.svg', {
-  as: 'raw',
+  query: '?raw',
+  import: 'default',
   eager: true
 })
 

@@ -99,7 +99,8 @@ const sidebarSize = ref("40px")
 .center {
   padding: 0;
   margin: 0;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
 
   background: v-bind('token.colorBgLayout');
 }
