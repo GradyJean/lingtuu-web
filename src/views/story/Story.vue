@@ -164,7 +164,7 @@ import {
   DownOutlined,
   DeleteOutlined,
 } from '@ant-design/icons-vue'
-import {getStoryList, type StoryItem, deleteStory, createStory} from '@api/story.ts'
+import {getStoryList, type StoryItem, deleteStory, createStory} from '@api/story/story.ts'
 import router from "../../router";
 
 const {token} = theme.useToken()

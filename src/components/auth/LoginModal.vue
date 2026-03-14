@@ -310,7 +310,7 @@ import {
   resetCredential,
   sendVerifyCode,
   type ThirdPlatformItem
-} from '@api/auth'
+} from '@api/auth/auth.ts'
 import WechatLogin from '@components/auth/wechat/WechatLogin.vue'
 
 const route = useRoute()

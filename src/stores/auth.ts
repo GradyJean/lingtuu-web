@@ -1,6 +1,6 @@
 import {ref, computed} from 'vue'
 import {defineStore} from 'pinia'
-import {logoutAuth, refreshAuthToken} from '@api/auth'
+import {logoutAuth, refreshAuthToken} from '@api/auth/auth.ts'
 
 interface TokenInfo {
     token: string

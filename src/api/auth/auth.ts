@@ -1,4 +1,4 @@
-import {baseApi} from '@api/index'
+import {baseApi} from '@api/base'
 
 export interface TokenInfo {
   token: string

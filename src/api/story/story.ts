@@ -1,5 +1,5 @@
-import appApi from '@api/index'
-import type {PageInput, PageResult} from '@api/types'
+import appApi from '@api/base'
+import type {PageInput, PageResult} from '@api/base/types.ts'
 
 // ==================== Story 相关类型 ====================
 

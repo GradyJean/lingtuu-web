@@ -20,7 +20,7 @@ import {theme} from 'ant-design-vue'
 import {ArrowLeftOutlined} from '@ant-design/icons-vue'
 import {useAuthStore} from '@stores/auth.ts'
 import {getDeviceId} from '@utils/device.ts'
-import {getWechatInfo} from '@api/auth'
+import {getWechatInfo} from '@api/auth/auth.ts'
 
 defineEmits(['back'])
 

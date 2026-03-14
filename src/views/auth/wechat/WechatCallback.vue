@@ -14,7 +14,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@stores/auth.ts'
-import {loginWithWechat} from '@api/auth'
+import {loginWithWechat} from '@api/auth/auth.ts'
 
 const route = useRoute()
 const authStore = useAuthStore()

@@ -1,7 +1,7 @@
 import axios, {AxiosError, type InternalAxiosRequestConfig} from 'axios'
 import type {AxiosRequestConfig} from 'axios'
-import {useAuthStore} from '@stores/auth'
-import {getDeviceId} from '@utils/device'
+import {useAuthStore} from '@stores/auth.ts'
+import {getDeviceId} from '@utils/device.ts'
 
 const requestConfig = {
     baseURL: import.meta.env.PROD ? 'https://www.qmvector.com/lingtuu' : '/lingtuu',

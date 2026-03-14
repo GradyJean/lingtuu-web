@@ -1,7 +1,7 @@
 import {message} from 'ant-design-vue'
 import type {AxiosInstance, AxiosRequestConfig} from 'axios'
-import {appRequest, baseRequest} from '@api/request.ts'
-import type {ApiResult} from '@api/types'
+import {appRequest, baseRequest} from '@api/base/request.ts'
+import type {ApiResult} from '@api/base/types.ts'
 
 type ApiClientConfig = AxiosRequestConfig & {
     silent?: boolean
