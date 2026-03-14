@@ -90,7 +90,7 @@
           <span class="card-tag card-tag--status">{{
               StoryStatus[story.status as keyof typeof StoryStatus] || story.status
             }}</span>
-          <span class="card-date">{{ formatDate(story.created_at) }}</span>
+          <span class="card-date">{{ formatDate(story.createdAt) }}</span>
           <div class="card-actions">
             <a-popconfirm
                 title="确定要删除这个作品吗？"
@@ -142,7 +142,7 @@
           </a-radio-group>
         </a-form-item>
         <a-form-item label="目标读者" required>
-          <a-radio-group v-model:value="createForm.target_reader">
+          <a-radio-group v-model:value="createForm.targetReader">
             <a-radio value="FEMALE">女频</a-radio>
             <a-radio value="MALE">男频</a-radio>
             <a-radio value="ALL">通用</a-radio>
@@ -207,7 +207,7 @@ const createForm = ref({
   title: '',
   type: '' as 'SHORT' | 'LONG' | 'SCRIPT' | 'VIDEO',
   perspective: 'THIRD' as 'FIRST' | 'THIRD',
-  target_reader: 'ALL' as 'FEMALE' | 'MALE' | 'ALL',
+  targetReader: 'ALL' as 'FEMALE' | 'MALE' | 'ALL',
 })
 
 function handleCardClick(id: string) {
@@ -219,7 +219,7 @@ function openCreateModal(type: 'SHORT' | 'LONG' | 'SCRIPT' | 'VIDEO') {
     title: '',
     type,
     perspective: 'THIRD',
-    target_reader: 'ALL',
+    targetReader: 'ALL',
   }
   createModalVisible.value = true
 }
@@ -245,8 +245,8 @@ function handleCreateSubmit() {
 async function fetchStoryList() {
   try {
     const res = await getStoryList({
-      page_num: currentPage.value,
-      page_size: pageSize.value,
+      page: currentPage.value,
+      size: pageSize.value,
       title: searchTitle.value,
       type: activeTab.value,
     })

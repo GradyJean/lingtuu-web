@@ -1,11 +1,9 @@
 import {ref, computed} from 'vue'
 import {defineStore} from 'pinia'
-import {logoutAuth, refreshAuthToken} from '@api/auth/auth.ts'
+import {logoutAuth, refreshAuthToken, type TokenInfo} from '@api/auth/auth.ts'
 
-interface TokenInfo {
-    token: string
-    expire_at: number
-}
+const STORE_ACCESS_TOKEN = 'accessToken'
+const STORE_REFRESH_TOKEN = 'refreshToken'
 
 export const useAuthStore = defineStore('auth', () => {
     // Token 信息
@@ -24,24 +22,22 @@ export const useAuthStore = defineStore('auth', () => {
      */
     function loadFromStorage() {
         try {
-            const accessTokenStr = localStorage.getItem('access_token')
-            const refreshTokenStr = localStorage.getItem('refresh_token')
+            const accessTokenStr = localStorage.getItem(STORE_ACCESS_TOKEN)
+            const refreshTokenStr = localStorage.getItem(STORE_REFRESH_TOKEN)
 
             if (accessTokenStr) {
                 const data = JSON.parse(accessTokenStr)
-                // 确保 expire_at 是毫秒级时间戳
                 accessToken.value = {
                     token: data.token,
-                    expire_at: data.expire_at > 1e12 ? data.expire_at : data.expire_at * 1000,
+                    expireAt: data.expireAt > 1e12 ? data.expireAt : data.expireAt * 1000,
                 }
             }
 
             if (refreshTokenStr) {
                 const data = JSON.parse(refreshTokenStr)
-                // 确保 expire_at 是毫秒级时间戳
                 refreshToken.value = {
                     token: data.token,
-                    expire_at: data.expire_at > 1e12 ? data.expire_at : data.expire_at * 1000,
+                    expireAt: data.expireAt > 1e12 ? data.expireAt : data.expireAt * 1000,
                 }
             }
 
@@ -58,10 +54,10 @@ export const useAuthStore = defineStore('auth', () => {
      */
     function saveToStorage() {
         if (accessToken.value) {
-            localStorage.setItem('access_token', JSON.stringify(accessToken.value))
+            localStorage.setItem(STORE_ACCESS_TOKEN, JSON.stringify(accessToken.value))
         }
         if (refreshToken.value) {
-            localStorage.setItem('refresh_token', JSON.stringify(refreshToken.value))
+            localStorage.setItem(STORE_REFRESH_TOKEN, JSON.stringify(refreshToken.value))
         }
     }
 
@@ -69,8 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
      * 检查 token 是否过期
      */
     function isTokenExpired(token: TokenInfo, advanceMs = 5 * 60 * 1000): boolean {
-        // expire_at 可能是秒级时间戳，需要转换为毫秒
-        const expireAt = token.expire_at > 1e12 ? token.expire_at : token.expire_at * 1000
+        const expireAt = token.expireAt > 1e12 ? token.expireAt : token.expireAt * 1000
         return Date.now() >= expireAt - advanceMs
     }
 
@@ -78,24 +73,23 @@ export const useAuthStore = defineStore('auth', () => {
      * 设置登录信息
      */
     function setLoginInfo(data: {
-        access_token: { token: string; expire_at: number }
-        refresh_token: { token: string; expire_at: number }
+        accessToken: { token: string; expireAt: number }
+        refreshToken: { token: string; expireAt: number }
     }) {
-        // 确保 expire_at 是毫秒级时间戳
-        const accessExpireAt = data.access_token.expire_at > 1e12
-            ? data.access_token.expire_at
-            : data.access_token.expire_at * 1000
-        const refreshExpireAt = data.refresh_token.expire_at > 1e12
-            ? data.refresh_token.expire_at
-            : data.refresh_token.expire_at * 1000
+        const accessExpireAt = data.accessToken.expireAt > 1e12
+            ? data.accessToken.expireAt
+            : data.accessToken.expireAt * 1000
+        const refreshExpireAt = data.refreshToken.expireAt > 1e12
+            ? data.refreshToken.expireAt
+            : data.refreshToken.expireAt * 1000
 
         accessToken.value = {
-            token: data.access_token.token,
-            expire_at: accessExpireAt,
+            token: data.accessToken.token,
+            expireAt: accessExpireAt,
         }
         refreshToken.value = {
-            token: data.refresh_token.token,
-            expire_at: refreshExpireAt,
+            token: data.refreshToken.token,
+            expireAt: refreshExpireAt,
         }
         saveToStorage()
         startCheckTimer()
@@ -135,12 +129,12 @@ export const useAuthStore = defineStore('auth', () => {
             const tokenData = await refreshAuthToken(refreshToken.value.token)
             // 直接更新 token，不要调用 startCheckTimer()
             accessToken.value = {
-                token: tokenData.access_token.token,
-                expire_at: tokenData.access_token.expire_at,
+                token: tokenData.accessToken.token,
+                expireAt: tokenData.accessToken.expireAt,
             }
             refreshToken.value = {
-                token: tokenData.refresh_token.token,
-                expire_at: tokenData.refresh_token.expire_at,
+                token: tokenData.refreshToken.token,
+                expireAt: tokenData.refreshToken.expireAt,
             }
             saveToStorage()
             return true
@@ -188,8 +182,8 @@ export const useAuthStore = defineStore('auth', () => {
         }
         refreshPromise = null
 
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
+        localStorage.removeItem(STORE_ACCESS_TOKEN)
+        localStorage.removeItem(STORE_REFRESH_TOKEN)
     }
 
     /**

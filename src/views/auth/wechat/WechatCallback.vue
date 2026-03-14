@@ -53,16 +53,16 @@ onMounted(async () => {
 
     sessionStorage.setItem('wechat_processed_code', String(code))
 
-    const { access_token, refresh_token } = await loginWithWechat(String(code), state ? String(state) : undefined)
+    const { accessToken, refreshToken } = await loginWithWechat(String(code), state ? String(state) : undefined)
 
     authStore.setLoginInfo({
-      access_token: {
-        token: access_token.token,
-        expire_at: access_token.expire_at,
+      accessToken: {
+        token: accessToken.token,
+        expireAt: accessToken.expireAt,
       },
-      refresh_token: {
-        token: refresh_token.token,
-        expire_at: refresh_token.expire_at,
+      refreshToken: {
+        token: refreshToken.token,
+        expireAt: refreshToken.expireAt,
       },
     })
 

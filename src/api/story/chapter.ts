@@ -6,25 +6,25 @@ export type ChapterStatus = 'DRAFT' | 'WRITING' | 'COMPLETED'
 
 export interface ChapterItem {
     id: string
-    story_id: string
-    parent_id?: string | null
+    storyId: string
+    parentId?: string | null
     title: string
     type: ChapterType
-    sort_order?: number | null
+    sortOrder?: number | null
     status?: ChapterStatus | null
-    word_count?: number | null
-    created_at: string
-    updated_at: string
+    wordCount?: number | null
+    createdAt: string
+    updatedAt: string
 }
 
 export interface ChapterListParams extends PageInput {
-    story_id: string
+    storyId: string
     title?: string
 }
 
 export interface CreateChapterParams {
-    story_id: string
-    parent_id?: string
+    storyId: string
+    parentId?: string
     title: string
     type: ChapterType
 }
@@ -32,14 +32,14 @@ export interface CreateChapterParams {
 export interface UpdateChapterParams {
     id: string
     title: string
-    sort_order?: number
+    sortOrder?: number
     status?: ChapterStatus
 }
 
 export interface UpdateChapterContentParams {
     id: string
     content?: string
-    word_count?: number
+    wordCount?: number
 }
 
 /**

@@ -2,12 +2,12 @@ import {baseApi} from '@api/base'
 
 export interface TokenInfo {
   token: string
-  expire_at: number
+  expireAt: number
 }
 
 export interface AuthTokenPair {
-  access_token: TokenInfo
-  refresh_token: TokenInfo
+  accessToken: TokenInfo
+  refreshToken: TokenInfo
 }
 
 export type IdentifierType = 'PHONE_NUMBER' | 'EMAIL'
@@ -29,18 +29,18 @@ export interface SendVerifyCodeInput {
 
 export interface LoginInput extends SendVerifyCodeInput {
   credential: string
-  verify_code_login: boolean
-  verify_code?: string
+  verifyCodeLogin: boolean
+  verifyCode?: string
 }
 
 export interface RegisterInput extends SendVerifyCodeInput {
   credential: string
-  verify_code: string
+  verifyCode: string
 }
 
 export interface ResetCredentialInput extends SendVerifyCodeInput {
   credential: string
-  verify_code: string
+  verifyCode: string
 }
 
 export function refreshAuthToken(token: string): Promise<AuthTokenPair> {

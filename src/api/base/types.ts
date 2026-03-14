@@ -2,8 +2,8 @@
  * 分页输入 - 公共参数
  */
 export interface PageInput {
-    page_num?: number
-    page_size?: number
+    page?: number
+    size?: number
 }
 
 /**
@@ -15,8 +15,8 @@ export interface PageResult<T> {
     page: number
     size: number
     pages: number
-    has_next: boolean
-    has_prev: boolean
+    hasNext: boolean
+    hasPrev: boolean
 }
 
 /**

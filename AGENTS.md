@@ -2,9 +2,16 @@
 
 ## API Naming
 
-- The Java backend uses Jackson `ObjectMapper` configured for `snake_case`.
-- When adding or updating frontend API code, use `snake_case` for request parameters and response fields to match the backend JSON shape.
-- Do not assume camelCase mapping in TypeScript API types unless the user explicitly says that behavior changed.
+- The Java backend now uses camelCase for Web API request parameters and response fields.
+- When adding or updating frontend API code, use camelCase in TypeScript request/response types to match the backend JSON shape.
+- Do not introduce `snake_case` API fields unless the user explicitly says a specific endpoint still requires it.
+
+## Backend Reference
+
+- Related Java backend workspace: `/Users/grady/workplace/java/lingtuu`
+- API module: `/Users/grady/workplace/java/lingtuu/lingtuu-api`
+- Repository module: `/Users/grady/workplace/java/lingtuu/lingtuu-repository`
+- When frontend API behavior is unclear, verify controller and schema definitions in the Java backend before changing request or response types.
 
 ## API Client
 

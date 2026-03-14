@@ -9,9 +9,12 @@ import Header from "@components/Header.vue";
 import Footer from "@components/Footer.vue";
 import TiptapEditor from "@components/editor/Editor.vue";
 import type {JSONContent} from '@tiptap/vue-3'
+import ChapterList from '@views/story/ChapterList.vue'
+import type {ChapterItem} from '@api/story/chapter.ts'
 
 const uiStore = uiStateStore()
 const chapterContent = ref('<h1>第一章</h1><p></p>')
+const currentChapter = ref<ChapterItem | null>(null)
 
 function menuActive(iconKey: string, isActive: boolean): void {
   let windowPosition: 'left' | 'right' = 'left'
@@ -28,6 +31,11 @@ function menuActive(iconKey: string, isActive: boolean): void {
 function handleEditorSave(payload: { html: string; text: string; json: JSONContent }): void {
   console.log('editor save payload', payload)
 }
+
+function handleChapterSelect(chapter: ChapterItem): void {
+  currentChapter.value = chapter
+  chapterContent.value = `<h1>${chapter.title}</h1><p></p>`
+}
 </script>
 
 <template>
@@ -35,7 +43,7 @@ function handleEditorSave(payload: { html: string; text: string; json: JSONConte
     <template #header>
       <Header>
         <template #header-left>
-          ddddd
+          {{ currentChapter?.title || '章节编辑' }}
         </template>
       </Header>
     </template>
@@ -54,7 +62,9 @@ function handleEditorSave(payload: { html: string; text: string; json: JSONConte
     </template>
     <template #main>
       <WorkContainer>
-        <template #left> left</template>
+        <template #left>
+          <ChapterList @select="handleChapterSelect"/>
+        </template>
         <template #center>
           <TiptapEditor v-model="chapterContent" @save="handleEditorSave"/>
         </template>

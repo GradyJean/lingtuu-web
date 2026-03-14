@@ -8,8 +8,8 @@ export interface StoryItem {
     title: string
     status: string
     type: string
-    created_at: string
-    updated_at: string
+    createdAt: string
+    updatedAt: string
 }
 
 export interface StoryListParams extends PageInput {
@@ -39,7 +39,7 @@ export function createStory(data: {
     title: string
     type: 'SCRIPT' | 'SHORT' | 'LONG' | 'VIDEO'
     perspective: 'FIRST' | 'THIRD'
-    target_reader: 'FEMALE' | 'MALE' | 'ALL'
+    targetReader: 'FEMALE' | 'MALE' | 'ALL'
 }) {
     return appApi.put<StoryItem>('/api/story', data)
 }
@@ -54,7 +54,7 @@ export function updateStory(data: {
     outline?: string
     type?: 'SCRIPT' | 'SHORT' | 'LONG' | 'VIDEO'
     perspective?: 'FIRST' | 'THIRD'
-    target_reader?: 'FEMALE' | 'MALE' | 'ALL'
+    targetReader?: 'FEMALE' | 'MALE' | 'ALL'
     status?: 'DRAFT' | 'WRITING' | 'COMPLETED'
 }) {
     return appApi.post<StoryItem>('/api/story', data)
