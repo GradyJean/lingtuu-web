@@ -12,7 +12,7 @@ export default defineConfig({
       '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
       '@views': fileURLToPath(new URL('./src/views', import.meta.url)),
       '@stores': fileURLToPath(new URL('./src/stores', import.meta.url)),
-      '@types': fileURLToPath(new URL('./src/types', import.meta.url)),
+      '@shared-types': fileURLToPath(new URL('./src/types', import.meta.url)),
       '@utils': fileURLToPath(new URL('./src/utils', import.meta.url))
     }
   },

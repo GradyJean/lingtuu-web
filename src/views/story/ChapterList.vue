@@ -342,7 +342,6 @@ async function persistMove(targetChapterId: string | undefined, mode: DropMode):
     return
   }
 
-  loading.value = true
   try {
     await moveChapter({
       storyId: resolvedStoryId.value,
@@ -353,7 +352,6 @@ async function persistMove(targetChapterId: string | undefined, mode: DropMode):
     message.success('章节排序已更新')
     await fetchChapterList({reset: true})
   } finally {
-    loading.value = false
     clearDragState()
   }
 }
@@ -903,12 +901,6 @@ watch(normalizedKeyword, () => {
   flex: 1;
   min-height: 0;
   overflow: auto;
-}
-
-.chapter-list__loading-more {
-  display: flex;
-  justify-content: center;
-  padding: 8px 0 16px;
 }
 
 .chapter-tree {

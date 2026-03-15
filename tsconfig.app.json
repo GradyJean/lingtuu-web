@@ -33,7 +33,7 @@
       "@stores/*": [
         "src/stores/*"
       ],
-      "@types/*": [
+      "@shared-types/*": [
         "src/types/*"
       ],
       "@utils/*": [

@@ -21,7 +21,7 @@
           全部
         </span>
         <span
-            v-for="(label, key) in StoryType"
+            v-for="(label, key) in storyTypeLabelMap"
             :key="key"
             class="tab"
             :class="{ active: activeTab === key }"
@@ -47,7 +47,7 @@
           <template #overlay>
             <a-menu @click="handleCreate">
               <a-menu-item
-                  v-for="(label, key) in StoryType"
+                  v-for="(label, key) in storyTypeLabelMap"
                   :key="key"
               >
                 {{ label }}
@@ -78,18 +78,20 @@
     <div class="story-list">
       <div v-for="story in storyList" :key="story.id" class="story-card" @click="handleCardClick(story.id)">
         <div class="card-header">
-          <span class="card-tag card-tag--type">{{
-              StoryType[story.type as keyof typeof StoryType] || story.type
-            }}</span>
+          <a-tag color="orange">{{
+              storyTypeLabelMap[story.type]
+            }}
+          </a-tag>
           <span class="card-title">{{ story.title }}</span>
         </div>
         <div class="card-body">
           <!-- 内容区域 -->
         </div>
         <div class="card-footer">
-          <span class="card-tag card-tag--status">{{
-              StoryStatus[story.status as keyof typeof StoryStatus] || story.status
-            }}</span>
+          <a-tag color="green">{{
+              storyStatusLabelMap[story.status]
+            }}
+          </a-tag>
           <span class="card-date">{{ formatDate(story.createdAt) }}</span>
           <div class="card-actions">
             <a-popconfirm
@@ -165,6 +167,7 @@ import {
   DeleteOutlined,
 } from '@ant-design/icons-vue'
 import {getStoryList, type StoryItem, deleteStory, createStory} from '@api/story/story.ts'
+import {storyStatusLabelMap, storyTypeLabelMap, type StoryTypeKey} from '@shared-types/story'
 import router from "../../router";
 
 const {token} = theme.useToken()
@@ -179,20 +182,6 @@ function formatDate(dateString: string): string {
   return `${year}-${month}-${day} ${hours}:${minutes}`
 }
 
-const StoryType = {
-  SHORT: '短篇',
-  LONG: '长篇',
-  SCRIPT: '剧本',
-  VIDEO: '视频',
-}
-
-const StoryStatus = {
-  DRAFT: '草稿',
-  WRITING: '连载中',
-  COMPLETED: '已完结',
-}
-
-type StoryTypeKey = keyof typeof StoryType | 'ALL'
 const activeTab = ref<StoryTypeKey>('ALL')
 const currentPage = ref(1)
 const total = ref(0)
@@ -418,25 +407,6 @@ onMounted(() => {
   padding: 16px;
   border-bottom: 1px solid v-bind('token.colorBorderSecondary');
 }
-
-
-.card-tag {
-  color: v-bind('token.colorTextLightSolid');
-  font-size: 12px;
-  padding: 2px 3px;
-  border-radius: v-bind('`${token.borderRadiusSM}px`');
-}
-
-
-.card-tag--status {
-  background: v-bind('token.colorPrimary');
-}
-
-
-.card-tag--type {
-  background: v-bind('token.colorWarning');
-}
-
 
 .card-title {
   font-size: 14px;
