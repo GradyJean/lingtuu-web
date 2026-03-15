@@ -20,6 +20,7 @@ export interface ChapterItem {
 export interface ChapterListParams extends PageInput {
     storyId: string
     title?: string
+    order?: 'asc' | 'desc'
 }
 
 export interface CreateChapterParams {

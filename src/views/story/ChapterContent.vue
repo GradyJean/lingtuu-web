@@ -18,7 +18,9 @@ const AUTO_SAVE_DELAY = 5000
 const RETRY_DELAYS = [5000, 10000, 30000]
 
 const currentStoryId = computed(() => storyStore.currentStoryId)
-const currentChapterId = computed(() => storyStore.currentChapter?.id ?? '')
+const currentChapter = computed(() => storyStore.currentChapter)
+const currentChapterId = computed(() => currentChapter.value?.id ?? '')
+const isEditableChapter = computed(() => currentChapter.value?.type === 'CHAPTER')
 const chapterSelectionVersion = computed(() => storyStore.chapterSelectionVersion)
 const autoSaveEnabled = computed({
   get: () => storyStore.settings.autoSaveEnabled,
@@ -29,6 +31,10 @@ const autoSaveEnabled = computed({
 const saveStatus = computed(() => storyStore.currentChapterSaveStatus)
 const lastSavedAt = computed(() => storyStore.currentChapterLastSavedAt)
 const saveStatusText = computed(() => {
+  if (currentChapter.value?.type === 'VOLUME') {
+    return '卷不支持正文编辑'
+  }
+
   switch (saveStatus.value) {
     case 'dirty':
       return '编辑中'
@@ -43,6 +49,10 @@ const saveStatusText = computed(() => {
   }
 })
 const lastSavedAtText = computed(() => {
+  if (currentChapter.value?.type === 'VOLUME') {
+    return '请选择章来编写正文'
+  }
+
   if (!lastSavedAt.value) {
     return '尚未保存'
   }
@@ -57,6 +67,7 @@ const lastSavedAtText = computed(() => {
 const canSave = computed(() =>
   !!currentStoryId.value
   && !!currentChapterId.value
+  && isEditableChapter.value
   && !loading.value
   && saveStatus.value !== 'saving'
 )
@@ -89,7 +100,7 @@ function clearRetryTimer() {
 function scheduleAutoSave(storyId = currentStoryId.value, chapterId = currentChapterId.value) {
   clearSaveTimer()
 
-  if (!autoSaveEnabled.value || !storyId || !chapterId || !storyStore.isChapterDirty(storyId, chapterId)) {
+  if (!autoSaveEnabled.value || !storyId || !chapterId || !isEditableChapter.value || !storyStore.isChapterDirty(storyId, chapterId)) {
     return
   }
 
@@ -101,7 +112,8 @@ function scheduleAutoSave(storyId = currentStoryId.value, chapterId = currentCha
 function scheduleRetry(storyId: string, chapterId: string) {
   clearRetryTimer()
 
-  if (!storyId || !storyStore.isChapterDirty(storyId, chapterId)) {
+  const canRetry = chapterId !== currentChapterId.value || isEditableChapter.value
+  if (!storyId || !canRetry || !storyStore.isChapterDirty(storyId, chapterId)) {
     return
   }
 
@@ -117,7 +129,8 @@ async function saveChapterContent(
   chapterId = currentChapterId.value,
   force = false,
 ): Promise<void> {
-  if (!storyId || !chapterId) {
+  const canPersist = chapterId !== currentChapterId.value || isEditableChapter.value
+  if (!storyId || !chapterId || !canPersist) {
     return
   }
 
@@ -165,6 +178,11 @@ watch(
     }
 
     if (!chapterId || !storyId) {
+      return
+    }
+
+    if (!isEditableChapter.value) {
+      loading.value = false
       return
     }
 
@@ -222,7 +240,12 @@ watch(autoSaveEnabled, (enabled) => {
 onBeforeUnmount(() => {
   clearSaveTimer()
   clearRetryTimer()
-  if (currentStoryId.value && currentChapterId.value && storyStore.isChapterDirty(currentStoryId.value, currentChapterId.value)) {
+  if (
+    currentStoryId.value
+    && currentChapterId.value
+    && isEditableChapter.value
+    && storyStore.isChapterDirty(currentStoryId.value, currentChapterId.value)
+  ) {
     void saveChapterContent(currentStoryId.value, currentChapterId.value)
   }
 })
@@ -248,14 +271,19 @@ function handleManualSave(): void {
       </div>
       <div class="chapter-content__status-actions">
         <span class="chapter-content__switch-label">自动保存</span>
-        <a-switch v-model:checked="autoSaveEnabled" size="small"/>
+        <a-switch v-model:checked="autoSaveEnabled" size="small" :disabled="!isEditableChapter"/>
         <a-button type="primary" size="small" :disabled="!canSave" @click="handleManualSave">
           保存
         </a-button>
       </div>
     </div>
     <a-spin :spinning="loading" wrapper-class-name="chapter-content__spin">
-      <Editor v-model="chapterContent" @change="handleEditorSave"/>
+      <div v-if="isEditableChapter" class="chapter-content__editor">
+        <Editor v-model="chapterContent" @change="handleEditorSave"/>
+      </div>
+      <div v-else class="chapter-content__empty">
+        <a-empty description="这一卷还没开场，添上一章，故事就能继续往前走了"/>
+      </div>
     </a-spin>
   </div>
 </template>
@@ -308,5 +336,16 @@ function handleManualSave(): void {
 
 :deep(.chapter-content__spin .ant-spin-container) {
   height: 100%;
+}
+
+.chapter-content__editor {
+  height: 100%;
+}
+
+.chapter-content__empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

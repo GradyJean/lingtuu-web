@@ -8,6 +8,8 @@ import {
   EditOutlined,
   FileAddOutlined,
   FolderAddOutlined,
+  SortAscendingOutlined,
+  SortDescendingOutlined,
 } from '@ant-design/icons-vue'
 import {
   createChapter,
@@ -20,7 +22,7 @@ import {
 } from '@api/story/chapter.ts'
 import {useStoryStore} from '@stores/story.ts'
 
-type DropMode = 'after' | 'inside-start' | 'root-start'
+type DropMode = 'before' | 'after' | 'inside-start' | 'root-start'
 
 interface DropTarget {
   chapterId?: string
@@ -35,6 +37,7 @@ const loading = ref(false)
 const loadingMore = ref(false)
 const submitting = ref(false)
 const keyword = ref('')
+const sortOrder = ref<'asc' | 'desc'>('desc')
 const chapterList = ref<ChapterItem[]>([])
 const currentPage = ref(1)
 const hasNextPage = ref(false)
@@ -115,10 +118,10 @@ const childChapterMap = computed(() => {
 })
 const canCreateVolume = computed(() => storyStore.currentStory?.type === 'LONG')
 const selectedChapter = computed(() =>
-  chapterList.value.find((item) => item.id === storyStore.currentSelectedChapterId) ?? storyStore.currentChapter
+    chapterList.value.find((item) => item.id === storyStore.currentSelectedChapterId) ?? storyStore.currentChapter
 )
 const draggingChapter = computed(() =>
-  chapterList.value.find((item) => item.id === draggingChapterId.value) ?? null
+    chapterList.value.find((item) => item.id === draggingChapterId.value) ?? null
 )
 
 function sortChapterList(a: ChapterItem, b: ChapterItem): number {
@@ -126,10 +129,12 @@ function sortChapterList(a: ChapterItem, b: ChapterItem): number {
   const orderB = b.sortOrder ?? Number.MAX_SAFE_INTEGER
 
   if (orderA !== orderB) {
-    return orderA - orderB
+    return sortOrder.value === 'asc' ? orderA - orderB : orderB - orderA
   }
 
-  return a.createdAt.localeCompare(b.createdAt)
+  return sortOrder.value === 'asc'
+      ? a.createdAt.localeCompare(b.createdAt)
+      : b.createdAt.localeCompare(a.createdAt)
 }
 
 function getChapterById(chapterId?: string | null): ChapterItem | null {
@@ -139,6 +144,19 @@ function getChapterById(chapterId?: string | null): ChapterItem | null {
 
 function getVolumeChildren(volumeId: string): ChapterItem[] {
   return childChapterMap.value.get(volumeId) ?? []
+}
+
+function isLastTopLevelChapter(chapterId: string): boolean {
+  return topLevelChapters.value[topLevelChapters.value.length - 1]?.id === chapterId
+}
+
+function isLastVolumeChild(volumeId: string, chapterId: string): boolean {
+  const chapters = getVolumeChildren(volumeId)
+  return chapters[chapters.length - 1]?.id === chapterId
+}
+
+function isVolumeEmpty(volumeId: string): boolean {
+  return getVolumeChildren(volumeId).length === 0
 }
 
 function canDrop(dragChapter: ChapterItem | null, targetChapterId: string | undefined, mode: DropMode): boolean {
@@ -168,8 +186,7 @@ function canDrop(dragChapter: ChapterItem | null, targetChapterId: string | unde
     return firstChild?.id !== dragChapter.id
   }
 
-  return !(dragChapter.type === 'VOLUME' && targetChapter.parentId);
-
+  return !(dragChapter.type === 'VOLUME' && targetChapter.parentId)
 
 }
 
@@ -203,6 +220,32 @@ function isActiveDropTarget(chapterId: string | undefined, mode: DropMode): bool
   return dropTarget.value?.chapterId === chapterId && dropTarget.value?.mode === mode
 }
 
+function resolveMoveMode(mode: DropMode): 'BEFORE' | 'AFTER' | 'INSIDE' | 'INSIDE_START' | 'ROOT_START' | 'ROOT_END' {
+  if (sortOrder.value === 'asc') {
+    switch (mode) {
+      case 'before':
+        return 'BEFORE'
+      case 'after':
+        return 'AFTER'
+      case 'inside-start':
+        return 'INSIDE_START'
+      case 'root-start':
+        return 'ROOT_START'
+    }
+  }
+
+  switch (mode) {
+    case 'before':
+      return 'AFTER'
+    case 'after':
+      return 'BEFORE'
+    case 'inside-start':
+      return 'INSIDE'
+    case 'root-start':
+      return 'ROOT_END'
+  }
+}
+
 async function persistMove(targetChapterId: string | undefined, mode: DropMode): Promise<void> {
   if (!canDrop(draggingChapter.value, targetChapterId, mode) || !draggingChapter.value) {
     clearDragState()
@@ -211,17 +254,11 @@ async function persistMove(targetChapterId: string | undefined, mode: DropMode):
 
   loading.value = true
   try {
-    const modeMap: Record<DropMode, 'AFTER' | 'INSIDE_START' | 'ROOT_START'> = {
-      after: 'AFTER',
-      'inside-start': 'INSIDE_START',
-      'root-start': 'ROOT_START',
-    }
-
     await moveChapter({
       storyId: resolvedStoryId.value,
       chapterId: draggingChapter.value.id,
       targetChapterId,
-      mode: modeMap[mode],
+      mode: resolveMoveMode(mode),
     })
     message.success('章节排序已更新')
     currentPage.value = 1
@@ -252,6 +289,7 @@ async function fetchChapterList(options?: { reset?: boolean }) {
       page: requestPage,
       size: pageSize,
       title: keyword.value || undefined,
+      order: sortOrder.value,
     })
 
     currentPage.value = res.page + 1
@@ -262,7 +300,7 @@ async function fetchChapterList(options?: { reset?: boolean }) {
     } else {
       const loadedIds = new Set(chapterList.value.map((item) => item.id))
       chapterList.value = chapterList.value.concat(
-        res.list.filter((item) => !loadedIds.has(item.id)),
+          res.list.filter((item) => !loadedIds.has(item.id)),
       )
     }
 
@@ -272,12 +310,18 @@ async function fetchChapterList(options?: { reset?: boolean }) {
     }
 
     const currentSelected = chapterList.value.find((item) => item.id === storyStore.currentSelectedChapterId)
-    const nextSelected = currentSelected || chapterList.value[0]
+    const normalizedSelected = currentSelected?.type === 'VOLUME'
+        ? (() => {
+          const volumeChildren = getVolumeChildren(currentSelected.id)
+          return volumeChildren[volumeChildren.length - 1] ?? currentSelected
+        })()
+        : currentSelected
+    const nextSelected = normalizedSelected || chapterList.value[0]
     if (!nextSelected) {
       storyStore.setSelectedChapter(null, resolvedStoryId.value)
       return
     }
-    if (reset || !currentSelected) {
+    if (reset || !currentSelected || normalizedSelected?.id !== currentSelected.id) {
       storyStore.setSelectedChapter(nextSelected, resolvedStoryId.value)
     }
   } finally {
@@ -292,15 +336,30 @@ function handleSearch() {
   void fetchChapterList({reset: true})
 }
 
+function handleToggleSort(): void {
+  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  currentPage.value = 1
+  hasNextPage.value = false
+  chapterList.value = []
+  void fetchChapterList({reset: true})
+}
+
 function handleSelect(chapter: ChapterItem) {
+  if (chapter.type === 'VOLUME') {
+    const volumeChildren = getVolumeChildren(chapter.id)
+    const lastChildChapter = volumeChildren[volumeChildren.length - 1]
+    storyStore.setSelectedChapter(lastChildChapter ?? chapter, resolvedStoryId.value)
+    return
+  }
+
   storyStore.setSelectedChapter(chapter, resolvedStoryId.value)
 }
 
 function openCreateModal(type: ChapterType, parentId?: string) {
   const nextType = type === 'VOLUME' && !canCreateVolume.value ? 'CHAPTER' : type
   const nextParentId = nextType === 'CHAPTER' && !parentId && selectedChapter.value?.type === 'VOLUME'
-    ? selectedChapter.value.id
-    : parentId
+      ? selectedChapter.value.id
+      : parentId
   createForm.value = {
     title: '',
     type: nextType,
@@ -372,8 +431,8 @@ async function handleDelete(chapter: ChapterItem) {
   const orderedListBeforeDelete = orderedChapterList.value
   const deletedIndex = orderedListBeforeDelete.findIndex((item) => item.id === chapter.id)
   const fallbackChapter = deletedIndex > 0
-    ? orderedListBeforeDelete[deletedIndex - 1]
-    : orderedListBeforeDelete[deletedIndex + 1] ?? null
+      ? orderedListBeforeDelete[deletedIndex - 1]
+      : orderedListBeforeDelete[deletedIndex + 1] ?? null
   const shouldMoveSelection = storyStore.currentSelectedChapterId === chapter.id
 
   await deleteChapter(chapter.id)
@@ -423,10 +482,10 @@ watch(resolvedStoryId, () => {
       />
       <div class="chapter-list__actions" :class="{'chapter-list__actions--single': !canCreateVolume}">
         <a-button
-          v-if="canCreateVolume"
-          type="primary"
-          size="small"
-          @click="openCreateModal('VOLUME')"
+            v-if="canCreateVolume"
+            type="primary"
+            size="small"
+            @click="openCreateModal('VOLUME')"
         >
           <template #icon>
             <FolderAddOutlined/>
@@ -439,6 +498,12 @@ watch(resolvedStoryId, () => {
           </template>
           新建章节
         </a-button>
+        <a-button size="small" @click="handleToggleSort">
+          <template #icon>
+            <SortAscendingOutlined v-if="sortOrder === 'asc'"/>
+            <SortDescendingOutlined v-else/>
+          </template>
+        </a-button>
       </div>
     </div>
 
@@ -446,25 +511,36 @@ watch(resolvedStoryId, () => {
       <a-spin :spinning="loading">
         <div v-if="orderedChapterList.length" class="chapter-tree">
           <div
-            class="chapter-slot chapter-slot--root"
-            :class="{
+              v-if="sortOrder === 'asc'"
+              class="chapter-slot chapter-slot--root"
+              :class="{
               'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, undefined, 'root-start'),
               'chapter-slot--active': isActiveDropTarget(undefined, 'root-start'),
             }"
-            @dragover.prevent="setDropTarget(undefined, 'root-start')"
-            @drop.prevent="persistMove(undefined, 'root-start')"
+              @dragover.prevent="setDropTarget(undefined, 'root-start')"
+              @drop.prevent="persistMove(undefined, 'root-start')"
           />
           <template v-for="topLevelChapter in topLevelChapters" :key="topLevelChapter.id">
-            <div
-              class="chapter-node"
+          <div
+              v-if="sortOrder === 'desc'"
+              class="chapter-slot"
               :class="{
+              'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'before'),
+              'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'before'),
+            }"
+              @dragover.prevent="setDropTarget(topLevelChapter.id, 'before')"
+              @drop.prevent="persistMove(topLevelChapter.id, 'before')"
+          />
+            <div
+                class="chapter-node"
+                :class="{
                 'chapter-node--active': storyStore.currentSelectedChapterId === topLevelChapter.id,
                 'chapter-node--dragging': draggingChapterId === topLevelChapter.id,
               }"
-              draggable="true"
-              @click="handleSelect(topLevelChapter)"
-              @dragstart="handleDragStart(topLevelChapter, $event)"
-              @dragend="handleDragEnd"
+                draggable="true"
+                @click="handleSelect(topLevelChapter)"
+                @dragstart="handleDragStart(topLevelChapter, $event)"
+                @dragend="handleDragEnd"
             >
               <div class="chapter-node__main">
                 <div class="chapter-node__title-row">
@@ -476,10 +552,10 @@ watch(resolvedStoryId, () => {
               </div>
               <div class="chapter-node__actions" @click.stop>
                 <a-button
-                  v-if="canCreateVolume && topLevelChapter.type === 'VOLUME'"
-                  type="text"
-                  size="small"
-                  @click="openCreateModal('CHAPTER', topLevelChapter.id)"
+                    v-if="canCreateVolume && topLevelChapter.type === 'VOLUME'"
+                    type="text"
+                    size="small"
+                    @click="openCreateModal('CHAPTER', topLevelChapter.id)"
                 >
                   <template #icon>
                     <FileAddOutlined/>
@@ -491,10 +567,10 @@ watch(resolvedStoryId, () => {
                   </template>
                 </a-button>
                 <a-popconfirm
-                  title="确定删除这个章节吗？"
-                  ok-text="确定"
-                  cancel-text="取消"
-                  @confirm="handleDelete(topLevelChapter)"
+                    title="确定删除这个章节吗？"
+                    ok-text="确定"
+                    cancel-text="取消"
+                    @confirm="handleDelete(topLevelChapter)"
                 >
                   <a-button type="text" size="small" danger>
                     <template #icon>
@@ -507,26 +583,37 @@ watch(resolvedStoryId, () => {
 
             <template v-if="topLevelChapter.type === 'VOLUME'">
               <div
-                class="chapter-slot chapter-slot--inside"
-                :class="{
+                  v-if="sortOrder === 'asc' || isVolumeEmpty(topLevelChapter.id)"
+                  class="chapter-slot chapter-slot--inside"
+                  :class="{
                   'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'inside-start'),
                   'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'inside-start'),
                 }"
-                @dragover.prevent="setDropTarget(topLevelChapter.id, 'inside-start')"
-                @drop.prevent="persistMove(topLevelChapter.id, 'inside-start')"
+                  @dragover.prevent="setDropTarget(topLevelChapter.id, 'inside-start')"
+                  @drop.prevent="persistMove(topLevelChapter.id, 'inside-start')"
               />
 
               <template v-for="childChapter in getVolumeChildren(topLevelChapter.id)" :key="childChapter.id">
                 <div
-                  class="chapter-node chapter-node--child"
-                  :class="{
+                    v-if="sortOrder === 'desc'"
+                    class="chapter-slot chapter-slot--inside"
+                    :class="{
+                    'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, childChapter.id, 'before'),
+                    'chapter-slot--active': isActiveDropTarget(childChapter.id, 'before'),
+                  }"
+                    @dragover.prevent="setDropTarget(childChapter.id, 'before')"
+                    @drop.prevent="persistMove(childChapter.id, 'before')"
+                />
+                <div
+                    class="chapter-node chapter-node--child"
+                    :class="{
                     'chapter-node--active': storyStore.currentSelectedChapterId === childChapter.id,
                     'chapter-node--dragging': draggingChapterId === childChapter.id,
                   }"
-                  draggable="true"
-                  @click="handleSelect(childChapter)"
-                  @dragstart="handleDragStart(childChapter, $event)"
-                  @dragend="handleDragEnd"
+                    draggable="true"
+                    @click="handleSelect(childChapter)"
+                    @dragstart="handleDragStart(childChapter, $event)"
+                    @dragend="handleDragEnd"
                 >
                   <div class="chapter-node__main">
                     <div class="chapter-node__title-row">
@@ -543,10 +630,10 @@ watch(resolvedStoryId, () => {
                       </template>
                     </a-button>
                     <a-popconfirm
-                      title="确定删除这个章节吗？"
-                      ok-text="确定"
-                      cancel-text="取消"
-                      @confirm="handleDelete(childChapter)"
+                        title="确定删除这个章节吗？"
+                        ok-text="确定"
+                        cancel-text="取消"
+                        @confirm="handleDelete(childChapter)"
                     >
                       <a-button type="text" size="small" danger>
                         <template #icon>
@@ -557,25 +644,27 @@ watch(resolvedStoryId, () => {
                   </div>
                 </div>
                 <div
-                  class="chapter-slot chapter-slot--inside"
-                  :class="{
+                    v-if="sortOrder === 'asc' || isLastVolumeChild(topLevelChapter.id, childChapter.id)"
+                    class="chapter-slot chapter-slot--inside"
+                    :class="{
                     'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, childChapter.id, 'after'),
                     'chapter-slot--active': isActiveDropTarget(childChapter.id, 'after'),
                   }"
-                  @dragover.prevent="setDropTarget(childChapter.id, 'after')"
-                  @drop.prevent="persistMove(childChapter.id, 'after')"
+                    @dragover.prevent="setDropTarget(childChapter.id, 'after')"
+                    @drop.prevent="persistMove(childChapter.id, 'after')"
                 />
               </template>
             </template>
 
             <div
-              class="chapter-slot"
-              :class="{
+                v-if="sortOrder === 'asc' || isLastTopLevelChapter(topLevelChapter.id)"
+                class="chapter-slot"
+                :class="{
                 'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'after'),
                 'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'after'),
               }"
-              @dragover.prevent="setDropTarget(topLevelChapter.id, 'after')"
-              @drop.prevent="persistMove(topLevelChapter.id, 'after')"
+                @dragover.prevent="setDropTarget(topLevelChapter.id, 'after')"
+                @drop.prevent="persistMove(topLevelChapter.id, 'after')"
             />
           </template>
         </div>
@@ -597,10 +686,10 @@ watch(resolvedStoryId, () => {
       <a-form ref="createFormRef" :model="createForm" :rules="createFormRules" layout="vertical" :required-mark="false">
         <a-form-item name="title">
           <a-input
-            v-model:value="createForm.title"
-            :maxlength="50"
-            :placeholder="createForm.type === 'VOLUME' ? '请输入分卷标题' : '请输入章节标题'"
-            show-count
+              v-model:value="createForm.title"
+              :maxlength="50"
+              :placeholder="createForm.type === 'VOLUME' ? '请输入分卷标题' : '请输入章节标题'"
+              show-count
           />
         </a-form-item>
       </a-form>
@@ -617,10 +706,10 @@ watch(resolvedStoryId, () => {
       <a-form ref="editFormRef" :model="editForm" :rules="editFormRules" layout="vertical" :required-mark="false">
         <a-form-item name="title">
           <a-input
-            v-model:value="editForm.title"
-            :placeholder="editForm.type === 'VOLUME' ? '请输入分卷标题' : '请输入章节标题'"
-            :maxlength="50"
-            show-count
+              v-model:value="editForm.title"
+              :placeholder="editForm.type === 'VOLUME' ? '请输入分卷标题' : '请输入章节标题'"
+              :maxlength="50"
+              show-count
           />
         </a-form-item>
       </a-form>
@@ -685,27 +774,42 @@ watch(resolvedStoryId, () => {
 
 .chapter-slot {
   height: 0;
-  padding: 0;
-  border-top: 2px dashed transparent;
+  margin: 4px 8px;
+  border: 1px dashed transparent;
+  background: transparent;
   opacity: 0;
-  transition: border-color 0.2s ease, padding 0.2s ease, opacity 0.2s ease;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, background-color 0.2s ease, height 0.2s ease, opacity 0.2s ease;
 }
 
 .chapter-slot--root {
 }
 
 .chapter-slot--inside {
-  margin-left: 34px;
+  margin-left: 52px;
 }
 
 .chapter-slot--visible {
-  padding: 4px 0;
+  height: 15px;
   opacity: 1;
-  border-top-color: v-bind('token.colorBorder');
+  border-radius: v-bind('`${token.borderRadiusSM}px`');
+  border-color: v-bind('token.colorTextTertiary');
+  background: v-bind('token.colorBgTextHover');
+}
+
+.chapter-slot--inside.chapter-slot--visible {
+  border-color: v-bind('token.colorPrimaryHover');
+  background: v-bind('token.controlItemBgActive');
 }
 
 .chapter-slot--active {
-  border-top-color: v-bind('token.colorPrimary');
+  border-color: v-bind('token.colorWarning');
+  background: color-mix(in srgb, v-bind('token.colorWarning') 16%, transparent);
+}
+
+.chapter-slot--inside.chapter-slot--active {
+  border-color: v-bind('token.colorWarning');
+  background: color-mix(in srgb, v-bind('token.colorWarning') 20%, transparent);
 }
 
 .chapter-node {
