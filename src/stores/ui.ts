@@ -16,8 +16,8 @@ export const uiStateStore = defineStore('ui', {
         windowPosition: {
             left: {
                 display: true,
-                size: 20,
-                lastSize: 20
+                size: 22,
+                lastSize: 22
             },
             right: {
                 display: true,
@@ -26,8 +26,8 @@ export const uiStateStore = defineStore('ui', {
             },
             center: {
                 display: true,
-                size: 60,
-                lastSize: 60
+                size: 58,
+                lastSize: 58
             }
         } as Record<WindowPane, WindowConfig>
     }),
