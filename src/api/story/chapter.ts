@@ -32,7 +32,6 @@ export interface CreateChapterParams {
 export interface UpdateChapterParams {
     id: string
     title: string
-    sortOrder?: number
     status?: ChapterStatus
 }
 
@@ -40,6 +39,15 @@ export interface UpdateChapterContentParams {
     id: string
     content?: string
     wordCount?: number
+}
+
+export type MoveChapterMode = 'BEFORE' | 'AFTER' | 'INSIDE' | 'ROOT_START' | 'ROOT_END'
+
+export interface MoveChapterParams {
+    storyId: string
+    chapterId: string
+    targetChapterId?: string
+    mode: MoveChapterMode
 }
 
 /**
@@ -75,6 +83,14 @@ export function updateChapter(data: UpdateChapterParams) {
  */
 export function updateChapterContent(data: UpdateChapterContentParams) {
     return appApi.post<boolean>('/api/chapter/content', data)
+}
+
+/**
+ * 根据移动意图调整章节顺序。
+ * 排序号由后端统一计算并重排。
+ */
+export function moveChapter(data: MoveChapterParams) {
+    return appApi.post<boolean>('/api/chapter/move', data)
 }
 
 /**

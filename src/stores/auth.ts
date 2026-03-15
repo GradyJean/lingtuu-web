@@ -45,7 +45,6 @@ export const useAuthStore = defineStore('auth', () => {
             // 启动定时检查
             startCheckTimer()
         } catch (error) {
-            console.error('加载登录状态失败:', error)
             clearAuth()
         }
     }
@@ -145,7 +144,6 @@ export const useAuthStore = defineStore('auth', () => {
             saveToStorage()
             return true
         } catch (error) {
-            console.error('刷新 token 异常:', error)
             return false
         }
     }
@@ -204,7 +202,6 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             await logoutAuth(accessToken.value?.token)
         } catch (error) {
-            console.error('退出登录失败:', error)
         } finally {
             requireLogin()
         }

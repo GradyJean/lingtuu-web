@@ -54,30 +54,49 @@ function isUnauthorizedError(error: unknown): boolean {
     return response?.status === 401 || isUnauthorizedResult(response?.data?.code ?? '')
 }
 
+function createPendingPromise<T>(): Promise<T> {
+    return new Promise<T>(() => {
+        // Keep the current async chain pending after redirecting to login.
+    })
+}
+
 function createApiClient(request: AxiosInstance): ApiClient {
     async function unwrapResult<T>(
         promise: Promise<{ data: ApiResult<T> }>,
         silent = false
     ): Promise<T> {
+        let response: { data: ApiResult<T> }
+
         try {
-            const response = await promise
-            const result = response.data
-
-            if (result.success) {
-                return result.data
-            }
-
-            if (request === appRequest && isUnauthorizedResult(result.code)) {
-                useAuthStore().requireLogin()
-            }
-
-            throw new Error(result.message || '请求失败')
+            response = await promise
         } catch (error) {
+            if (isUnauthorizedError(error)) {
+                if (request === appRequest) {
+                    useAuthStore().requireLogin()
+                }
+                return createPendingPromise<T>()
+            }
+
             if (!silent && !isUnauthorizedError(error)) {
                 message.error(extractErrorMessage(error))
             }
             throw error
         }
+
+        const result = response.data
+
+        if (result.success) {
+            return result.data
+        }
+
+        if (request === appRequest && isUnauthorizedResult(result.code)) {
+            useAuthStore().requireLogin()
+            return createPendingPromise<T>()
+        } else if (!silent) {
+            message.error(result.message || '请求失败')
+        }
+
+        return Promise.reject(new Error(result.message || '请求失败'))
     }
 
     return {
