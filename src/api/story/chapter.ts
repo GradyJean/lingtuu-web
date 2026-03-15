@@ -38,7 +38,17 @@ export interface UpdateChapterParams {
 export interface UpdateChapterContentParams {
     id: string
     content?: string
-    wordCount?: number
+    plainText?: string
+}
+
+export interface ChapterContentItem {
+    id: string
+    storyId: string
+    content?: string | null
+    plainText?: string | null
+    wordCount?: number | null
+    createdAt: string
+    updatedAt: string
 }
 
 export type MoveChapterMode = 'BEFORE' | 'AFTER' | 'INSIDE' | 'INSIDE_START' | 'ROOT_START' | 'ROOT_END'
@@ -62,6 +72,13 @@ export function getChapterList(params: ChapterListParams) {
  */
 export function getChapterById(id: string) {
     return appApi.get<ChapterItem>(`/api/chapter/${id}`)
+}
+
+/**
+ * 根据 ID 获取章节正文
+ */
+export function getChapterContentById(id: string) {
+    return appApi.get<ChapterContentItem>(`/api/chapter/${id}/content`)
 }
 
 /**

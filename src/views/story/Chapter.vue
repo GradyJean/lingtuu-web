@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue'
+import {computed, watch} from 'vue'
 import WorkContainer from '@components/container/WorkContainer.vue'
 import {uiStateStore} from '@stores/ui.ts'
 import MenuBar from '@components/menu/MenuBar.vue'
@@ -7,10 +7,8 @@ import MenuItem from '@components/menu/MenuItem.vue'
 import WorkspaceLayout from "@components/layout/WorkspaceLayout.vue";
 import Header from "@components/Header.vue";
 import Footer from "@components/Footer.vue";
-import Editor from "@components/editor/Editor.vue";
-import type {JSONContent} from '@tiptap/vue-3'
 import ChapterList from '@views/story/ChapterList.vue'
-import type {ChapterItem} from '@api/story/chapter.ts'
+import ChapterContent from '@views/story/ChapterContent.vue'
 import {useRoute} from 'vue-router'
 import {useStoryStore} from '@stores/story.ts'
 import {ArrowLeftOutlined} from '@ant-design/icons-vue'
@@ -19,10 +17,10 @@ import router from '../../router'
 const uiStore = uiStateStore()
 const storyStore = useStoryStore()
 const route = useRoute()
-const chapterContent = ref('<h1>第一章</h1><p></p>')
-const currentChapter = ref<ChapterItem | null>(null)
 
 const storyId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
+const currentChapter = computed(() => storyStore.currentChapter)
+
 const headerTitle = computed(() => {
   if (currentChapter.value?.title) {
     return currentChapter.value.title
@@ -45,26 +43,17 @@ function menuActive(iconKey: string, isActive: boolean): void {
   uiStore.windowShow(windowPosition, isActive)
 }
 
-function handleEditorSave(payload: { html: string; text: string; json: JSONContent }): void {
-  console.log('editor save payload', payload)
-}
-
-function handleChapterSelect(chapter: ChapterItem): void {
-  currentChapter.value = chapter
-  chapterContent.value = `<h1>${chapter.title}</h1><p></p>`
-}
-
 function handleBack(): void {
   router.push({name: 'story'})
 }
 
-watch(storyId, () => {
-  currentChapter.value = null
-  if (!storyId.value) {
+watch(storyId, (nextStoryId) => {
+  if (!nextStoryId) {
     storyStore.clearCurrentStory()
     return
   }
-  void storyStore.fetchCurrentStory(storyId.value)
+  storyStore.setActiveStoryId(nextStoryId)
+  void storyStore.fetchCurrentStory(nextStoryId)
 }, {immediate: true})
 </script>
 
@@ -101,10 +90,10 @@ watch(storyId, () => {
     <template #main>
       <WorkContainer>
         <template #left>
-          <ChapterList :story-id="storyId" @select="handleChapterSelect"/>
+          <ChapterList/>
         </template>
         <template #center>
-          <Editor v-model="chapterContent" @save="handleEditorSave"/>
+          <ChapterContent/>
         </template>
         <template #right>
           right

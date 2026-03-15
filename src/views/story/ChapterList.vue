@@ -27,14 +27,6 @@ interface DropTarget {
   mode: DropMode
 }
 
-const props = defineProps<{
-  storyId?: string
-}>()
-
-const emit = defineEmits<{
-  select: [chapter: ChapterItem]
-}>()
-
 const {token} = theme.useToken()
 const storyStore = useStoryStore()
 const route = useRoute()
@@ -44,7 +36,6 @@ const loadingMore = ref(false)
 const submitting = ref(false)
 const keyword = ref('')
 const chapterList = ref<ChapterItem[]>([])
-const selectedChapterId = ref('')
 const currentPage = ref(1)
 const hasNextPage = ref(false)
 const draggingChapterId = ref('')
@@ -102,7 +93,7 @@ const editFormRules = computed<Record<string, Rule[]>>(() => ({
 
 const resolvedStoryId = computed(() => {
   const routeId = route.params.id
-  return props.storyId || (typeof routeId === 'string' ? routeId : '')
+  return storyStore.currentStoryId || (typeof routeId === 'string' ? routeId : '')
 })
 
 const chapterTypeMap: Record<ChapterType, string> = {
@@ -124,7 +115,7 @@ const childChapterMap = computed(() => {
 })
 const canCreateVolume = computed(() => storyStore.currentStory?.type === 'LONG')
 const selectedChapter = computed(() =>
-  chapterList.value.find((item) => item.id === selectedChapterId.value) ?? null
+  chapterList.value.find((item) => item.id === storyStore.currentSelectedChapterId) ?? storyStore.currentChapter
 )
 const draggingChapter = computed(() =>
   chapterList.value.find((item) => item.id === draggingChapterId.value) ?? null
@@ -276,19 +267,18 @@ async function fetchChapterList(options?: { reset?: boolean }) {
     }
 
     if (!chapterList.value.length) {
-      selectedChapterId.value = ''
+      storyStore.setSelectedChapter(null, resolvedStoryId.value)
       return
     }
 
-    const currentSelected = chapterList.value.find((item) => item.id === selectedChapterId.value)
+    const currentSelected = chapterList.value.find((item) => item.id === storyStore.currentSelectedChapterId)
     const nextSelected = currentSelected || chapterList.value[0]
     if (!nextSelected) {
-      selectedChapterId.value = ''
+      storyStore.setSelectedChapter(null, resolvedStoryId.value)
       return
     }
-    selectedChapterId.value = nextSelected.id
     if (reset || !currentSelected) {
-      emit('select', nextSelected)
+      storyStore.setSelectedChapter(nextSelected, resolvedStoryId.value)
     }
   } finally {
     loading.value = false
@@ -303,8 +293,7 @@ function handleSearch() {
 }
 
 function handleSelect(chapter: ChapterItem) {
-  selectedChapterId.value = chapter.id
-  emit('select', chapter)
+  storyStore.setSelectedChapter(chapter, resolvedStoryId.value)
 }
 
 function openCreateModal(type: ChapterType, parentId?: string) {
@@ -380,11 +369,25 @@ async function handleEditSubmit() {
 }
 
 async function handleDelete(chapter: ChapterItem) {
+  const orderedListBeforeDelete = orderedChapterList.value
+  const deletedIndex = orderedListBeforeDelete.findIndex((item) => item.id === chapter.id)
+  const fallbackChapter = deletedIndex > 0
+    ? orderedListBeforeDelete[deletedIndex - 1]
+    : orderedListBeforeDelete[deletedIndex + 1] ?? null
+  const shouldMoveSelection = storyStore.currentSelectedChapterId === chapter.id
+
   await deleteChapter(chapter.id)
   message.success('章节删除成功')
   currentPage.value = 1
   hasNextPage.value = false
   await fetchChapterList({reset: true})
+
+  if (!shouldMoveSelection || !fallbackChapter) {
+    return
+  }
+
+  const nextSelectedChapter = chapterList.value.find((item) => item.id === fallbackChapter.id) ?? null
+  storyStore.setSelectedChapter(nextSelectedChapter, resolvedStoryId.value)
 }
 
 function handleContentScroll(event: Event): void {
@@ -441,151 +444,145 @@ watch(resolvedStoryId, () => {
 
     <div class="chapter-list__content" @scroll="handleContentScroll">
       <a-spin :spinning="loading">
-      <div v-if="orderedChapterList.length" class="chapter-tree">
-        <div
-          class="chapter-slot chapter-slot--root"
-          :class="{
-            'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, undefined, 'root-start'),
-            'chapter-slot--active': isActiveDropTarget(undefined, 'root-start'),
-          }"
-          @dragover.prevent="setDropTarget(undefined, 'root-start')"
-          @drop.prevent="persistMove(undefined, 'root-start')"
-        />
-        <template v-for="topLevelChapter in topLevelChapters" :key="topLevelChapter.id">
+        <div v-if="orderedChapterList.length" class="chapter-tree">
           <div
-            class="chapter-node"
+            class="chapter-slot chapter-slot--root"
             :class="{
-              'chapter-node--active': selectedChapterId === topLevelChapter.id,
-              'chapter-node--dragging': draggingChapterId === topLevelChapter.id,
+              'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, undefined, 'root-start'),
+              'chapter-slot--active': isActiveDropTarget(undefined, 'root-start'),
             }"
-            draggable="true"
-            @click="handleSelect(topLevelChapter)"
-            @dragstart="handleDragStart(topLevelChapter, $event)"
-            @dragend="handleDragEnd"
-          >
-            <div class="chapter-node__main">
-              <div class="chapter-node__title-row">
-                <a-tag :bordered="false" class="chapter-node__type-tag">
-                  {{ chapterTypeMap[topLevelChapter.type] }}
-                </a-tag>
-                <span class="chapter-node__title">{{ topLevelChapter.title }}</span>
+            @dragover.prevent="setDropTarget(undefined, 'root-start')"
+            @drop.prevent="persistMove(undefined, 'root-start')"
+          />
+          <template v-for="topLevelChapter in topLevelChapters" :key="topLevelChapter.id">
+            <div
+              class="chapter-node"
+              :class="{
+                'chapter-node--active': storyStore.currentSelectedChapterId === topLevelChapter.id,
+                'chapter-node--dragging': draggingChapterId === topLevelChapter.id,
+              }"
+              draggable="true"
+              @click="handleSelect(topLevelChapter)"
+              @dragstart="handleDragStart(topLevelChapter, $event)"
+              @dragend="handleDragEnd"
+            >
+              <div class="chapter-node__main">
+                <div class="chapter-node__title-row">
+                  <a-tag :bordered="false" class="chapter-node__type-tag">
+                    {{ chapterTypeMap[topLevelChapter.type] }}
+                  </a-tag>
+                  <span class="chapter-node__title">{{ topLevelChapter.title }}</span>
+                </div>
               </div>
-              <div class="chapter-node__meta">
-                <span v-if="topLevelChapter.wordCount">字数 {{ topLevelChapter.wordCount }}</span>
-              </div>
-            </div>
-            <div class="chapter-node__actions" @click.stop>
-              <a-button
+              <div class="chapter-node__actions" @click.stop>
+                <a-button
                   v-if="canCreateVolume && topLevelChapter.type === 'VOLUME'"
                   type="text"
                   size="small"
                   @click="openCreateModal('CHAPTER', topLevelChapter.id)"
-              >
-                <template #icon>
-                  <FileAddOutlined/>
-                </template>
-              </a-button>
-              <a-button type="text" size="small" @click="openEditModal(topLevelChapter)">
-                <template #icon>
-                  <EditOutlined/>
-                </template>
-              </a-button>
-              <a-popconfirm
+                >
+                  <template #icon>
+                    <FileAddOutlined/>
+                  </template>
+                </a-button>
+                <a-button type="text" size="small" @click="openEditModal(topLevelChapter)">
+                  <template #icon>
+                    <EditOutlined/>
+                  </template>
+                </a-button>
+                <a-popconfirm
                   title="确定删除这个章节吗？"
                   ok-text="确定"
                   cancel-text="取消"
                   @confirm="handleDelete(topLevelChapter)"
-              >
-                <a-button type="text" size="small" danger>
-                  <template #icon>
-                    <DeleteOutlined/>
-                  </template>
-                </a-button>
-              </a-popconfirm>
-            </div>
-          </div>
-
-          <template v-if="topLevelChapter.type === 'VOLUME'">
-            <div
-              class="chapter-slot chapter-slot--inside"
-              :class="{
-                'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'inside-start'),
-                'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'inside-start'),
-              }"
-              @dragover.prevent="setDropTarget(topLevelChapter.id, 'inside-start')"
-              @drop.prevent="persistMove(topLevelChapter.id, 'inside-start')"
-            />
-
-            <template v-for="childChapter in getVolumeChildren(topLevelChapter.id)" :key="childChapter.id">
-              <div
-                class="chapter-node chapter-node--child"
-                :class="{
-                  'chapter-node--active': selectedChapterId === childChapter.id,
-                  'chapter-node--dragging': draggingChapterId === childChapter.id,
-                }"
-                draggable="true"
-                @click="handleSelect(childChapter)"
-                @dragstart="handleDragStart(childChapter, $event)"
-                @dragend="handleDragEnd"
-              >
-                <div class="chapter-node__main">
-                  <div class="chapter-node__title-row">
-                    <a-tag :bordered="false" class="chapter-node__type-tag">
-                      {{ chapterTypeMap[childChapter.type] }}
-                    </a-tag>
-                    <span class="chapter-node__title">{{ childChapter.title }}</span>
-                  </div>
-                  <div class="chapter-node__meta">
-                    <span v-if="childChapter.wordCount">字数 {{ childChapter.wordCount }}</span>
-                  </div>
-                </div>
-                <div class="chapter-node__actions" @click.stop>
-                  <a-button type="text" size="small" @click="openEditModal(childChapter)">
+                >
+                  <a-button type="text" size="small" danger>
                     <template #icon>
-                      <EditOutlined/>
+                      <DeleteOutlined/>
                     </template>
                   </a-button>
-                  <a-popconfirm
-                    title="确定删除这个章节吗？"
-                    ok-text="确定"
-                    cancel-text="取消"
-                    @confirm="handleDelete(childChapter)"
-                  >
-                    <a-button type="text" size="small" danger>
-                      <template #icon>
-                        <DeleteOutlined/>
-                      </template>
-                    </a-button>
-                  </a-popconfirm>
-                </div>
+                </a-popconfirm>
               </div>
+            </div>
+
+            <template v-if="topLevelChapter.type === 'VOLUME'">
               <div
                 class="chapter-slot chapter-slot--inside"
                 :class="{
-                  'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, childChapter.id, 'after'),
-                  'chapter-slot--active': isActiveDropTarget(childChapter.id, 'after'),
+                  'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'inside-start'),
+                  'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'inside-start'),
                 }"
-                @dragover.prevent="setDropTarget(childChapter.id, 'after')"
-                @drop.prevent="persistMove(childChapter.id, 'after')"
+                @dragover.prevent="setDropTarget(topLevelChapter.id, 'inside-start')"
+                @drop.prevent="persistMove(topLevelChapter.id, 'inside-start')"
               />
-            </template>
-          </template>
 
-          <div
-            class="chapter-slot"
-            :class="{
-              'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'after'),
-              'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'after'),
-            }"
-            @dragover.prevent="setDropTarget(topLevelChapter.id, 'after')"
-            @drop.prevent="persistMove(topLevelChapter.id, 'after')"
-          />
-        </template>
-      </div>
-      <a-empty v-else description="暂无章节数据"/>
-      <div v-if="loadingMore" class="chapter-list__loading-more">
-        <a-spin size="small"/>
-      </div>
+              <template v-for="childChapter in getVolumeChildren(topLevelChapter.id)" :key="childChapter.id">
+                <div
+                  class="chapter-node chapter-node--child"
+                  :class="{
+                    'chapter-node--active': storyStore.currentSelectedChapterId === childChapter.id,
+                    'chapter-node--dragging': draggingChapterId === childChapter.id,
+                  }"
+                  draggable="true"
+                  @click="handleSelect(childChapter)"
+                  @dragstart="handleDragStart(childChapter, $event)"
+                  @dragend="handleDragEnd"
+                >
+                  <div class="chapter-node__main">
+                    <div class="chapter-node__title-row">
+                      <a-tag :bordered="false" class="chapter-node__type-tag">
+                        {{ chapterTypeMap[childChapter.type] }}
+                      </a-tag>
+                      <span class="chapter-node__title">{{ childChapter.title }}</span>
+                    </div>
+                  </div>
+                  <div class="chapter-node__actions" @click.stop>
+                    <a-button type="text" size="small" @click="openEditModal(childChapter)">
+                      <template #icon>
+                        <EditOutlined/>
+                      </template>
+                    </a-button>
+                    <a-popconfirm
+                      title="确定删除这个章节吗？"
+                      ok-text="确定"
+                      cancel-text="取消"
+                      @confirm="handleDelete(childChapter)"
+                    >
+                      <a-button type="text" size="small" danger>
+                        <template #icon>
+                          <DeleteOutlined/>
+                        </template>
+                      </a-button>
+                    </a-popconfirm>
+                  </div>
+                </div>
+                <div
+                  class="chapter-slot chapter-slot--inside"
+                  :class="{
+                    'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, childChapter.id, 'after'),
+                    'chapter-slot--active': isActiveDropTarget(childChapter.id, 'after'),
+                  }"
+                  @dragover.prevent="setDropTarget(childChapter.id, 'after')"
+                  @drop.prevent="persistMove(childChapter.id, 'after')"
+                />
+              </template>
+            </template>
+
+            <div
+              class="chapter-slot"
+              :class="{
+                'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'after'),
+                'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'after'),
+              }"
+              @dragover.prevent="setDropTarget(topLevelChapter.id, 'after')"
+              @drop.prevent="persistMove(topLevelChapter.id, 'after')"
+            />
+          </template>
+        </div>
+        <a-empty v-else description="暂无章节数据"/>
+        <div v-if="loadingMore" class="chapter-list__loading-more">
+          <a-spin size="small"/>
+        </div>
       </a-spin>
     </div>
 
@@ -765,14 +762,6 @@ watch(resolvedStoryId, () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.chapter-node__meta {
-  display: flex;
-  gap: 12px;
-  margin-top: 4px;
-  color: v-bind('token.colorTextSecondary');
-  font-size: 12px;
 }
 
 .chapter-node__actions {

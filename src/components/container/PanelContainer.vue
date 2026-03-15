@@ -44,8 +44,8 @@ const {token} = theme.useToken()
 
 <style>
 .panel-viewport::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .panel-viewport::-webkit-scrollbar-track {

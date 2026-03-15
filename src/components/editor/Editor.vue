@@ -37,13 +37,12 @@ const props = withDefaults(defineProps<{
   placeholder?: string
 }>(), {
   modelValue: '<h1>第一章</h1><p></p>',
-  placeholder: '开始写这一章。按 Enter 换段，先把故事写出来。'
+  placeholder: '开始写这一章。按 Enter 换段，先把故事写出来。',
 })
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
   (e: 'change', payload: EditorSavePayload): void
-  (e: 'save', payload: EditorSavePayload): void
 }>()
 
 const html = ref(props.modelValue)
@@ -95,7 +94,6 @@ const editor = useEditor({
     }
     emit('update:modelValue', payload.html)
     emit('change', payload)
-    emit('save', payload)
   }
 })
 
@@ -285,7 +283,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="toolbar-side">
-        <span class="meta">草稿已保存 · {{ textCount }} 字</span>
+        <span class="meta">{{ textCount }} 字</span>
       </div>
     </header>
 
@@ -327,7 +325,9 @@ onBeforeUnmount(() => {
       </a-space>
     </BubbleMenu>
 
-    <EditorContent v-if="editor" :editor="editor" class="editor-surface" />
+    <div class="editor-scroll">
+      <EditorContent v-if="editor" :editor="editor" class="editor-surface" />
+    </div>
   </div>
 </template>
 
@@ -345,7 +345,8 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 0 12px;
+  min-width: 800px;
+  padding: 15px 15px 12px;
   border-bottom: 1px solid v-bind('token.colorBorderSecondary');
   flex-shrink: 0;
 }
@@ -359,6 +360,8 @@ onBeforeUnmount(() => {
 }
 
 .toolbar-main {
+  min-width: 0;
+  flex: 1;
   flex-wrap: wrap;
 }
 
@@ -385,11 +388,19 @@ onBeforeUnmount(() => {
 }
 
 .editor-surface {
+  min-width: 800px;
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  height: 100%;
+}
+
+.editor-scroll {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
 }
 
 :deep(.editor-content) {
@@ -398,8 +409,7 @@ onBeforeUnmount(() => {
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
-  padding: 28px 0 80px;
-  overflow-y: auto;
+  padding: 28px 15px 80px;
   outline: none;
   color: v-bind('token.colorText');
   font-size: 17px;
