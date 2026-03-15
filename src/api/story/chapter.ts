@@ -41,7 +41,7 @@ export interface UpdateChapterContentParams {
     wordCount?: number
 }
 
-export type MoveChapterMode = 'BEFORE' | 'AFTER' | 'INSIDE' | 'ROOT_START' | 'ROOT_END'
+export type MoveChapterMode = 'BEFORE' | 'AFTER' | 'INSIDE' | 'INSIDE_START' | 'ROOT_START' | 'ROOT_END'
 
 export interface MoveChapterParams {
     storyId: string

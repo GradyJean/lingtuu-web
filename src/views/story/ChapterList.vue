@@ -8,7 +8,6 @@ import {
   EditOutlined,
   FileAddOutlined,
   FolderAddOutlined,
-  ReloadOutlined,
 } from '@ant-design/icons-vue'
 import {
   createChapter,
@@ -21,7 +20,7 @@ import {
 } from '@api/story/chapter.ts'
 import {useStoryStore} from '@stores/story.ts'
 
-type DropMode = 'before' | 'after' | 'inside' | 'root-start' | 'root-end'
+type DropMode = 'after' | 'inside-start' | 'root-start'
 
 interface DropTarget {
   chapterId?: string
@@ -112,6 +111,17 @@ const chapterTypeMap: Record<ChapterType, string> = {
 }
 
 const orderedChapterList = computed(() => [...chapterList.value].sort(sortChapterList))
+const topLevelChapters = computed(() => orderedChapterList.value.filter((item) => !item.parentId))
+const childChapterMap = computed(() => {
+  const map = new Map<string, ChapterItem[]>()
+  for (const chapter of orderedChapterList.value) {
+    if (!chapter.parentId) continue
+    const list = map.get(chapter.parentId) ?? []
+    list.push(chapter)
+    map.set(chapter.parentId, list)
+  }
+  return map
+})
 const canCreateVolume = computed(() => storyStore.currentStory?.type === 'LONG')
 const selectedChapter = computed(() =>
   chapterList.value.find((item) => item.id === selectedChapterId.value) ?? null
@@ -136,37 +146,14 @@ function getChapterById(chapterId?: string | null): ChapterItem | null {
   return chapterList.value.find((item) => item.id === chapterId) ?? null
 }
 
-function getChapterLevel(chapter: ChapterItem): number {
-  return chapter.parentId ? 1 : 0
-}
-
-function shouldShowBeforeDropzone(chapter: ChapterItem): boolean {
-  const parent = getChapterById(chapter.parentId)
-  if (!parent) return true
-
-  const siblings = orderedChapterList.value
-    .filter((item) => (item.parentId ?? null) === (chapter.parentId ?? null))
-
-  return siblings[0]?.id !== chapter.id
-}
-
-function getAfterDropIndent(chapter: ChapterItem, index: number): number {
-  const nextChapter = orderedChapterList.value[index + 1]
-  if (!nextChapter) {
-    return 16
-  }
-
-  if ((nextChapter.parentId ?? null) !== (chapter.parentId ?? null)) {
-    return 16 + Math.max(getChapterLevel(nextChapter) - 1, 0) * 18
-  }
-
-  return 16 + getChapterLevel(chapter) * 18
+function getVolumeChildren(volumeId: string): ChapterItem[] {
+  return childChapterMap.value.get(volumeId) ?? []
 }
 
 function canDrop(dragChapter: ChapterItem | null, targetChapterId: string | undefined, mode: DropMode): boolean {
   if (!dragChapter) return false
 
-  if (mode === 'root-start' || mode === 'root-end') {
+  if (mode === 'root-start') {
     return dragChapter.type === 'CHAPTER' || dragChapter.type === 'VOLUME'
   }
 
@@ -177,15 +164,22 @@ function canDrop(dragChapter: ChapterItem | null, targetChapterId: string | unde
   const targetChapter = getChapterById(targetChapterId)
   if (!targetChapter) return false
 
-  if (mode === 'inside') {
-    return dragChapter.type === 'CHAPTER' && targetChapter.type === 'VOLUME'
+  if (mode === 'inside-start') {
+    if (dragChapter.type !== 'CHAPTER' || targetChapter.type !== 'VOLUME') {
+      return false
+    }
+
+    if (dragChapter.parentId !== targetChapter.id) {
+      return true
+    }
+
+    const firstChild = getVolumeChildren(targetChapter.id)[0]
+    return firstChild?.id !== dragChapter.id
   }
 
-  if (dragChapter.type === 'VOLUME' && targetChapter.parentId) {
-    return false
-  }
+  return !(dragChapter.type === 'VOLUME' && targetChapter.parentId);
 
-  return true
+
 }
 
 function setDropTarget(chapterId: string | undefined, mode: DropMode): void {
@@ -226,12 +220,10 @@ async function persistMove(targetChapterId: string | undefined, mode: DropMode):
 
   loading.value = true
   try {
-    const modeMap: Record<DropMode, 'BEFORE' | 'AFTER' | 'INSIDE' | 'ROOT_START' | 'ROOT_END'> = {
-      before: 'BEFORE',
+    const modeMap: Record<DropMode, 'AFTER' | 'INSIDE_START' | 'ROOT_START'> = {
       after: 'AFTER',
-      inside: 'INSIDE',
+      'inside-start': 'INSIDE_START',
       'root-start': 'ROOT_START',
-      'root-end': 'ROOT_END',
     }
 
     await moveChapter({
@@ -414,7 +406,7 @@ watch(resolvedStoryId, () => {
 </script>
 
 <template>
-  <div class="chapter-list">
+  <div class="chapter-list" :class="{'chapter-list--dragging': !!draggingChapterId}">
     <div class="chapter-list__toolbar">
       <div class="chapter-list__title">
         <span>章节列表</span>
@@ -451,58 +443,49 @@ watch(resolvedStoryId, () => {
       <a-spin :spinning="loading">
       <div v-if="orderedChapterList.length" class="chapter-tree">
         <div
-          class="chapter-dropzone chapter-dropzone--root"
-          :class="{'chapter-dropzone--active': isActiveDropTarget(undefined, 'root-start')}"
+          class="chapter-slot chapter-slot--root"
+          :class="{
+            'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, undefined, 'root-start'),
+            'chapter-slot--active': isActiveDropTarget(undefined, 'root-start'),
+          }"
           @dragover.prevent="setDropTarget(undefined, 'root-start')"
           @drop.prevent="persistMove(undefined, 'root-start')"
         />
-        <template v-for="(chapter, index) in orderedChapterList" :key="chapter.id">
-          <div
-            v-if="shouldShowBeforeDropzone(chapter)"
-            class="chapter-dropzone"
-            :style="{marginLeft: `${16 + getChapterLevel(chapter) * 18}px`}"
-            :class="{'chapter-dropzone--active': isActiveDropTarget(chapter.id, 'before')}"
-            @dragover.prevent="setDropTarget(chapter.id, 'before')"
-            @drop.prevent="persistMove(chapter.id, 'before')"
-          />
+        <template v-for="topLevelChapter in topLevelChapters" :key="topLevelChapter.id">
           <div
             class="chapter-node"
             :class="{
-              'chapter-node--active': selectedChapterId === chapter.id,
-              'chapter-node--dragging': draggingChapterId === chapter.id,
-              'chapter-node--inside-active': isActiveDropTarget(chapter.id, 'inside'),
+              'chapter-node--active': selectedChapterId === topLevelChapter.id,
+              'chapter-node--dragging': draggingChapterId === topLevelChapter.id,
             }"
-            :style="{paddingLeft: `${16 + getChapterLevel(chapter) * 18}px`}"
             draggable="true"
-            @click="handleSelect(chapter)"
-            @dragstart="handleDragStart(chapter, $event)"
+            @click="handleSelect(topLevelChapter)"
+            @dragstart="handleDragStart(topLevelChapter, $event)"
             @dragend="handleDragEnd"
-            @dragover.prevent="setDropTarget(chapter.id, 'inside')"
-            @drop.prevent="persistMove(chapter.id, 'inside')"
           >
             <div class="chapter-node__main">
               <div class="chapter-node__title-row">
                 <a-tag :bordered="false" class="chapter-node__type-tag">
-                  {{ chapterTypeMap[chapter.type] }}
+                  {{ chapterTypeMap[topLevelChapter.type] }}
                 </a-tag>
-                <span class="chapter-node__title">{{ chapter.title }}</span>
+                <span class="chapter-node__title">{{ topLevelChapter.title }}</span>
               </div>
               <div class="chapter-node__meta">
-                <span v-if="chapter.wordCount">字数 {{ chapter.wordCount }}</span>
+                <span v-if="topLevelChapter.wordCount">字数 {{ topLevelChapter.wordCount }}</span>
               </div>
             </div>
             <div class="chapter-node__actions" @click.stop>
               <a-button
-                  v-if="canCreateVolume && chapter.type === 'VOLUME'"
+                  v-if="canCreateVolume && topLevelChapter.type === 'VOLUME'"
                   type="text"
                   size="small"
-                  @click="openCreateModal('CHAPTER', chapter.id)"
+                  @click="openCreateModal('CHAPTER', topLevelChapter.id)"
               >
                 <template #icon>
                   <FileAddOutlined/>
                 </template>
               </a-button>
-              <a-button type="text" size="small" @click="openEditModal(chapter)">
+              <a-button type="text" size="small" @click="openEditModal(topLevelChapter)">
                 <template #icon>
                   <EditOutlined/>
                 </template>
@@ -511,7 +494,7 @@ watch(resolvedStoryId, () => {
                   title="确定删除这个章节吗？"
                   ok-text="确定"
                   cancel-text="取消"
-                  @confirm="handleDelete(chapter)"
+                  @confirm="handleDelete(topLevelChapter)"
               >
                 <a-button type="text" size="small" danger>
                   <template #icon>
@@ -521,20 +504,83 @@ watch(resolvedStoryId, () => {
               </a-popconfirm>
             </div>
           </div>
+
+          <template v-if="topLevelChapter.type === 'VOLUME'">
+            <div
+              class="chapter-slot chapter-slot--inside"
+              :class="{
+                'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'inside-start'),
+                'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'inside-start'),
+              }"
+              @dragover.prevent="setDropTarget(topLevelChapter.id, 'inside-start')"
+              @drop.prevent="persistMove(topLevelChapter.id, 'inside-start')"
+            />
+
+            <template v-for="childChapter in getVolumeChildren(topLevelChapter.id)" :key="childChapter.id">
+              <div
+                class="chapter-node chapter-node--child"
+                :class="{
+                  'chapter-node--active': selectedChapterId === childChapter.id,
+                  'chapter-node--dragging': draggingChapterId === childChapter.id,
+                }"
+                draggable="true"
+                @click="handleSelect(childChapter)"
+                @dragstart="handleDragStart(childChapter, $event)"
+                @dragend="handleDragEnd"
+              >
+                <div class="chapter-node__main">
+                  <div class="chapter-node__title-row">
+                    <a-tag :bordered="false" class="chapter-node__type-tag">
+                      {{ chapterTypeMap[childChapter.type] }}
+                    </a-tag>
+                    <span class="chapter-node__title">{{ childChapter.title }}</span>
+                  </div>
+                  <div class="chapter-node__meta">
+                    <span v-if="childChapter.wordCount">字数 {{ childChapter.wordCount }}</span>
+                  </div>
+                </div>
+                <div class="chapter-node__actions" @click.stop>
+                  <a-button type="text" size="small" @click="openEditModal(childChapter)">
+                    <template #icon>
+                      <EditOutlined/>
+                    </template>
+                  </a-button>
+                  <a-popconfirm
+                    title="确定删除这个章节吗？"
+                    ok-text="确定"
+                    cancel-text="取消"
+                    @confirm="handleDelete(childChapter)"
+                  >
+                    <a-button type="text" size="small" danger>
+                      <template #icon>
+                        <DeleteOutlined/>
+                      </template>
+                    </a-button>
+                  </a-popconfirm>
+                </div>
+              </div>
+              <div
+                class="chapter-slot chapter-slot--inside"
+                :class="{
+                  'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, childChapter.id, 'after'),
+                  'chapter-slot--active': isActiveDropTarget(childChapter.id, 'after'),
+                }"
+                @dragover.prevent="setDropTarget(childChapter.id, 'after')"
+                @drop.prevent="persistMove(childChapter.id, 'after')"
+              />
+            </template>
+          </template>
+
           <div
-            class="chapter-dropzone"
-            :style="{marginLeft: `${getAfterDropIndent(chapter, index)}px`}"
-            :class="{'chapter-dropzone--active': isActiveDropTarget(chapter.id, 'after')}"
-            @dragover.prevent="setDropTarget(chapter.id, 'after')"
-            @drop.prevent="persistMove(chapter.id, 'after')"
+            class="chapter-slot"
+            :class="{
+              'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'after'),
+              'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'after'),
+            }"
+            @dragover.prevent="setDropTarget(topLevelChapter.id, 'after')"
+            @drop.prevent="persistMove(topLevelChapter.id, 'after')"
           />
         </template>
-        <div
-          class="chapter-dropzone chapter-dropzone--root"
-          :class="{'chapter-dropzone--active': isActiveDropTarget(undefined, 'root-end')}"
-          @dragover.prevent="setDropTarget(undefined, 'root-end')"
-          @drop.prevent="persistMove(undefined, 'root-end')"
-        />
       </div>
       <a-empty v-else description="暂无章节数据"/>
       <div v-if="loadingMore" class="chapter-list__loading-more">
@@ -566,7 +612,7 @@ watch(resolvedStoryId, () => {
     <a-modal
         v-model:open="editModalOpen"
         :confirm-loading="submitting"
-        title="编辑章节"
+        :title="editForm.type === 'VOLUME' ? '编辑分卷' : '编辑章节'"
         ok-text="确定"
         cancel-text="取消"
         @ok="handleEditSubmit"
@@ -640,33 +686,43 @@ watch(resolvedStoryId, () => {
   padding: 8px 0;
 }
 
-.chapter-dropzone {
+.chapter-slot {
   height: 0;
-  padding: 2px 0;
-  margin-right: 12px;
-  border-radius: 999px;
-  background-clip: content-box;
-  transition: background-color 0.2s ease;
+  padding: 0;
+  border-top: 2px dashed transparent;
+  opacity: 0;
+  transition: border-color 0.2s ease, padding 0.2s ease, opacity 0.2s ease;
 }
 
-.chapter-dropzone--root {
-  margin-left: 16px;
+.chapter-slot--root {
 }
 
-.chapter-dropzone--active {
-  background: v-bind('token.colorPrimary');
+.chapter-slot--inside {
+  margin-left: 34px;
+}
+
+.chapter-slot--visible {
+  padding: 4px 0;
+  opacity: 1;
+  border-top-color: v-bind('token.colorBorder');
+}
+
+.chapter-slot--active {
+  border-top-color: v-bind('token.colorPrimary');
 }
 
 .chapter-node {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
+  gap: 4px;
+  padding: 2px;
   cursor: pointer;
-  border-left: 2px solid transparent;
+  border-left: 5px solid transparent;
   transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.chapter-node--child {
+  padding-left: 34px;
 }
 
 .chapter-node:hover {
@@ -680,10 +736,6 @@ watch(resolvedStoryId, () => {
 
 .chapter-node--dragging {
   opacity: 0.45;
-}
-
-.chapter-node--inside-active {
-  box-shadow: inset 0 0 0 1px v-bind('token.colorPrimary');
 }
 
 .chapter-node__main {
