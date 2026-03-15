@@ -168,8 +168,7 @@ watch(
       return
     }
 
-    const chapter = storyStore.currentChapter
-    const defaultDraft = `<h1>${chapter?.title?.trim() || '第一章'}</h1><p></p>`
+    const defaultDraft = '<p></p>'
 
     const requestId = ++fetchToken
     loading.value = true

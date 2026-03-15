@@ -45,9 +45,8 @@ function createEmptyStoryWorkspace(): StoryWorkspaceState {
     }
 }
 
-function getDefaultChapterContent(chapterTitle?: string): string {
-    const title = chapterTitle?.trim() || '第一章'
-    return `<h1>${title}</h1><p></p>`
+function getDefaultChapterContent(): string {
+    return '<p></p>'
 }
 
 export const useStoryStore = defineStore('story', () => {
@@ -91,7 +90,7 @@ export const useStoryStore = defineStore('story', () => {
             return getDefaultChapterContent()
         }
 
-        return storyState.chapterDraftMap[chapter.id] ?? getDefaultChapterContent(chapter.title)
+        return storyState.chapterDraftMap[chapter.id] ?? getDefaultChapterContent()
     })
     const hasStory = computed(() => !!currentStory.value)
 

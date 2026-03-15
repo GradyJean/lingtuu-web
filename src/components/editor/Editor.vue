@@ -36,7 +36,7 @@ const props = withDefaults(defineProps<{
   modelValue?: string
   placeholder?: string
 }>(), {
-  modelValue: '<h1>第一章</h1><p></p>',
+  modelValue: '<p></p>',
   placeholder: '开始写这一章。按 Enter 换段，先把故事写出来。',
 })
 
