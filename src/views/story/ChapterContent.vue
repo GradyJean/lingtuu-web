@@ -137,6 +137,7 @@ async function saveChapterContent(
   const draftContent = storyStore.getChapterDraft(storyId, chapterId)
   const plainText = storyStore.getChapterPlainText(storyId, chapterId) ?? ''
   const savedContent = storyStore.getChapterSavedContent(storyId, chapterId)
+  const contentToSave = draftContent ?? savedContent ?? '<p></p>'
 
   if (!force && (draftContent === undefined || draftContent === savedContent)) {
     storyStore.setChapterSaveStatus('saved', storyId, chapterId)
@@ -149,10 +150,10 @@ async function saveChapterContent(
   try {
     await updateChapterContent({
       id: chapterId,
-      content: draftContent,
+      content: contentToSave,
       plainText,
     })
-    storyStore.markChapterSaved(draftContent, plainText, undefined, storyId, chapterId)
+    storyStore.markChapterSaved(contentToSave, plainText, undefined, storyId, chapterId)
     retryCount = 0
     clearRetryTimer()
   } catch (error) {

@@ -4,7 +4,7 @@ import {useAuthStore} from '@stores/auth.ts'
 import {getDeviceId} from '@utils/device.ts'
 
 const requestConfig = {
-    baseURL: import.meta.env.PROD ? 'https://www.qmvector.com/lingtuu' : '/lingtuu',
+    baseURL: import.meta.env.PROD ? 'https://www.lingtuu.com/lingtuu' : '/lingtuu',
     timeout: 30000,
 }
 
