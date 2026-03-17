@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:clean": "rm -rf node_modules/.vite && vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc -b && vite build && tar -cf lingtuu.tar -C dist .",
     "preview": "vite preview"
   },
   "dependencies": {
