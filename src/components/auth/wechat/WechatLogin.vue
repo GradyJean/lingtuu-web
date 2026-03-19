@@ -20,14 +20,14 @@ import {theme} from 'ant-design-vue'
 import {ArrowLeftOutlined} from '@ant-design/icons-vue'
 import {useAuthStore} from '@stores/auth.ts'
 import {getDeviceId} from '@utils/device.ts'
-import {getWechatInfo} from '@api/auth/auth.ts'
+import {getWechatInfo, type WechatInfo} from '@api/auth/auth.ts'
 
 defineEmits(['back'])
 
 const authStore = useAuthStore()
 const {token} = theme.useToken()
 const loading = ref(true)
-const wechatConfig = ref<{ appId?: string; scope?: string }>({})
+const wechatConfig = ref<WechatInfo>()
 let pollTimer: number | null = null
 let messageHandler: ((event: MessageEvent) => void) | null = null
 
@@ -37,10 +37,6 @@ async function loadWechatConfig() {
     wechatConfig.value = await getWechatInfo()
   } catch (error) {
     console.error('加载微信配置失败:', error)
-    wechatConfig.value = {
-      appId: 'wx2530a86caf4887b5',
-      scope: 'snsapi_login',
-    }
   }
 }
 
@@ -83,8 +79,8 @@ async function initWechatLogin() {
     new (window as any).WxLogin({
       self_redirect: false,
       id: 'wechat_qr_container',
-      appid: wechatConfig.value.appId || 'wx2530a86caf4887b5',
-      scope: wechatConfig.value.scope || 'snsapi_login',
+      appid: wechatConfig.value?.info.appId,
+      scope: 'snsapi_login',
       redirect_uri: encodeURIComponent(window.location.origin + '/auth/wechat/callback'),
       state: state,
       style: 'black',
@@ -102,7 +98,7 @@ function startPollingLoginStatus() {
   if (pollTimer) {
     clearInterval(pollTimer)
   }
-  
+
   // 监听 postMessage（从回调窗口）
   messageHandler = (event: MessageEvent) => {
     if (event.data && event.data.type === 'wechat_login_success') {
@@ -111,7 +107,7 @@ function startPollingLoginStatus() {
       authStore.loadFromStorage()
     }
   }
-  
+
   window.addEventListener('message', messageHandler)
 
   // 同时轮询 localStorage（兼容情况）
