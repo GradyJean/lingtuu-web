@@ -200,7 +200,7 @@ const createForm = ref({
 })
 
 function handleCardClick(id: string) {
-  router.push({name: 'chapter', params: {id}})
+  router.push({name: 'storyDetail', params: {id}})
 }
 
 function openCreateModal(type: 'SHORT' | 'LONG' | 'SCRIPT' | 'VIDEO') {

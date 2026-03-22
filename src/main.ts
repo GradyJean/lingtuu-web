@@ -12,14 +12,14 @@ const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
+
+const authStore = useAuthStore()
+authStore.loadFromStorage()
+
 app.use(router)
 app.use(Antd)
 
-// 恢复登录状态 - 在 mount 之后调用，确保 Pinia 完全初始化
 app.mount('#app')
 
-// 在应用挂载后再加载登录状态
-const authStore = useAuthStore()
-authStore.loadFromStorage()
 // 设置主题
 setTheme('system')
