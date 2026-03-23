@@ -76,7 +76,7 @@
 
     <!-- 作品列表 -->
     <div class="story-list">
-      <div v-for="story in storyList" :key="story.id" class="story-card" @click="handleCardClick(story.id)">
+      <div v-for="story in storyList" :key="story.id" class="story-card">
         <div class="card-header">
           <a-tag color="orange">{{
               storyTypeLabelMap[story.type]
@@ -84,7 +84,7 @@
           </a-tag>
           <span class="card-title">{{ story.title }}</span>
         </div>
-        <div class="card-body">
+        <div class="card-body" @click="handleCardClick(story.id)">
           <!-- 内容区域 -->
         </div>
         <div class="card-footer">
@@ -390,7 +390,6 @@ onMounted(() => {
   border: 1px solid v-bind('token.colorBorderSecondary');
   overflow: hidden;
   transition: box-shadow 0.3s, transform 0.3s;
-  cursor: pointer;
 }
 
 
@@ -418,6 +417,7 @@ onMounted(() => {
 .card-body {
   height: 160px;
   background: v-bind('token.colorBgTextHover');
+  cursor: pointer;
 }
 
 
