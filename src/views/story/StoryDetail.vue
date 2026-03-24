@@ -34,8 +34,7 @@ const storyWordCountText = computed(() => `${storyWordCount.value.toLocaleString
 const storyTitle = computed(() => currentStory.value?.title || '章节编辑')
 
 async function fetchStoryWordCount(nextStoryId: string): Promise<void> {
-  const chapterPage = await getChapterList({
-    storyId: nextStoryId,
+  const chapterPage = await getChapterList(nextStoryId, {
     page: 1,
     size: 2000,
     order: 'desc',

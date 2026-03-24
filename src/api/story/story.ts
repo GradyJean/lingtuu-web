@@ -40,7 +40,6 @@ export interface CreateStoryParams {
 }
 
 export interface UpdateStoryParams {
-    id: string
     title?: string
     tags?: string[]
     outline?: string
@@ -74,8 +73,8 @@ export function createStory(data: CreateStoryParams) {
 /**
  * 更新作品
  */
-export function updateStory(data: UpdateStoryParams) {
-    return appApi.post<boolean>(`/api/story/${data.id}`, data)
+export function updateStory(id: string, data: UpdateStoryParams) {
+    return appApi.post<boolean>(`/api/story/${id}`, data)
 }
 
 /**

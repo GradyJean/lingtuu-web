@@ -65,11 +65,11 @@ const lastSavedAtText = computed(() => {
   return `最后保存 ${date.toLocaleString()}`
 })
 const canSave = computed(() =>
-  !!currentStoryId.value
-  && !!currentChapterId.value
-  && isEditableChapter.value
-  && !loading.value
-  && saveStatus.value !== 'saving'
+    !!currentStoryId.value
+    && !!currentChapterId.value
+    && isEditableChapter.value
+    && !loading.value
+    && saveStatus.value !== 'saving'
 )
 
 const chapterContent = computed({
@@ -125,9 +125,9 @@ function scheduleRetry(storyId: string, chapterId: string) {
 }
 
 async function saveChapterContent(
-  storyId = currentStoryId.value,
-  chapterId = currentChapterId.value,
-  force = false,
+    storyId = currentStoryId.value,
+    chapterId = currentChapterId.value,
+    force = false,
 ): Promise<void> {
   const canPersist = chapterId !== currentChapterId.value || isEditableChapter.value
   if (!storyId || !chapterId || !canPersist) {
@@ -148,8 +148,7 @@ async function saveChapterContent(
 
   storyStore.setChapterSaveStatus('saving', storyId, chapterId)
   try {
-    await updateChapterContent({
-      id: chapterId,
+    await updateChapterContent(storyId, chapterId, {
       content: contentToSave,
       plainText,
     })
@@ -164,69 +163,69 @@ async function saveChapterContent(
 }
 
 watch(
-  [currentStoryId, currentChapterId, chapterSelectionVersion],
-  async ([storyId, chapterId], [previousStoryId, previousChapterId]) => {
-    clearSaveTimer()
-    clearRetryTimer()
+    [currentStoryId, currentChapterId, chapterSelectionVersion],
+    async ([storyId, chapterId], [previousStoryId, previousChapterId]) => {
+      clearSaveTimer()
+      clearRetryTimer()
 
-    if (
-      previousStoryId
-      && previousChapterId
-      && (previousStoryId !== storyId || previousChapterId !== chapterId)
-      && storyStore.isChapterDirty(previousStoryId, previousChapterId)
-    ) {
-      await saveChapterContent(previousStoryId, previousChapterId)
-    }
+      if (
+          previousStoryId
+          && previousChapterId
+          && (previousStoryId !== storyId || previousChapterId !== chapterId)
+          && storyStore.isChapterDirty(previousStoryId, previousChapterId)
+      ) {
+        await saveChapterContent(previousStoryId, previousChapterId)
+      }
 
-    if (!chapterId || !storyId) {
-      return
-    }
-
-    if (!isEditableChapter.value) {
-      loading.value = false
-      return
-    }
-
-    const defaultDraft = '<p></p>'
-
-    const requestId = ++fetchToken
-    loading.value = true
-    try {
-      const content = await getChapterContentById(chapterId)
-      if (requestId !== fetchToken || storyStore.currentChapter?.id !== chapterId) {
+      if (!chapterId || !storyId) {
         return
       }
 
-      const remoteContent = content.content || defaultDraft
-      const remotePlainText = content.plainText || ''
-      const remoteSavedAt = content.updatedAt || ''
-      if (storyStore.isChapterDirty(storyId, chapterId)) {
-        storyStore.setChapterSavedContent(remoteContent, remotePlainText, remoteSavedAt, storyId, chapterId)
-      } else {
-        storyStore.setChapterContentFromRemote(remoteContent, remotePlainText, remoteSavedAt, storyId, chapterId)
-      }
-    } catch (error) {
-      if (requestId === fetchToken) {
-        message.error('章节内容加载失败')
-      }
-    } finally {
-      if (requestId === fetchToken) {
+      if (!isEditableChapter.value) {
         loading.value = false
+        return
       }
-    }
-  },
-  {immediate: true},
+
+      const defaultDraft = '<p></p>'
+
+      const requestId = ++fetchToken
+      loading.value = true
+      try {
+        const content = await getChapterContentById(storyId, chapterId)
+        if (requestId !== fetchToken || storyStore.currentChapter?.id !== chapterId) {
+          return
+        }
+
+        const remoteContent = content.content || defaultDraft
+        const remotePlainText = content.plainText || ''
+        const remoteSavedAt = content.updatedAt || ''
+        if (storyStore.isChapterDirty(storyId, chapterId)) {
+          storyStore.setChapterSavedContent(remoteContent, remotePlainText, remoteSavedAt, storyId, chapterId)
+        } else {
+          storyStore.setChapterContentFromRemote(remoteContent, remotePlainText, remoteSavedAt, storyId, chapterId)
+        }
+      } catch (error) {
+        if (requestId === fetchToken) {
+          message.error('章节内容加载失败')
+        }
+      } finally {
+        if (requestId === fetchToken) {
+          loading.value = false
+        }
+      }
+    },
+    {immediate: true},
 )
 
 watch(
-  [currentStoryId, currentChapterId, chapterContent],
-  ([storyId, chapterId]) => {
-    retryCount = 0
-    clearRetryTimer()
+    [currentStoryId, currentChapterId, chapterContent],
+    ([storyId, chapterId]) => {
+      retryCount = 0
+      clearRetryTimer()
 
-    scheduleAutoSave(storyId, chapterId)
-  },
-  {flush: 'post'},
+      scheduleAutoSave(storyId, chapterId)
+    },
+    {flush: 'post'},
 )
 
 watch(autoSaveEnabled, (enabled) => {
@@ -242,10 +241,10 @@ onBeforeUnmount(() => {
   clearSaveTimer()
   clearRetryTimer()
   if (
-    currentStoryId.value
-    && currentChapterId.value
-    && isEditableChapter.value
-    && storyStore.isChapterDirty(currentStoryId.value, currentChapterId.value)
+      currentStoryId.value
+      && currentChapterId.value
+      && isEditableChapter.value
+      && storyStore.isChapterDirty(currentStoryId.value, currentChapterId.value)
   ) {
     void saveChapterContent(currentStoryId.value, currentChapterId.value)
   }

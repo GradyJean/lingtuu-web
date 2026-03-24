@@ -107,9 +107,9 @@ const chapterTypeMap: Record<ChapterType, string> = {
 const normalizedKeyword = computed(() => keyword.value.trim().toLowerCase())
 const orderedChapterList = computed(() => [...chapterList.value].sort(sortChapterList))
 const matchedChapters = computed(() =>
-  normalizedKeyword.value
-    ? orderedChapterList.value.filter((item) => item.title.toLowerCase().includes(normalizedKeyword.value))
-    : [],
+    normalizedKeyword.value
+        ? orderedChapterList.value.filter((item) => item.title.toLowerCase().includes(normalizedKeyword.value))
+        : [],
 )
 const matchedChapterIds = computed(() => new Set(matchedChapters.value.map((item) => item.id)))
 const currentMatchedChapterId = computed(() => matchedChapters.value[currentMatchIndex.value]?.id ?? '')
@@ -125,7 +125,7 @@ const childChapterMap = computed(() => {
   return map
 })
 const matchCountText = computed(() =>
-  matchedChapters.value.length ? `${currentMatchIndex.value + 1}/${matchedChapters.value.length}` : '0/0',
+    matchedChapters.value.length ? `${currentMatchIndex.value + 1}/${matchedChapters.value.length}` : '0/0',
 )
 const canCreateVolume = computed(() => storyStore.currentStory?.type === 'LONG')
 const selectedChapter = computed(() =>
@@ -343,8 +343,7 @@ async function persistMove(targetChapterId: string | undefined, mode: DropMode):
   }
 
   try {
-    await moveChapter({
-      storyId: resolvedStoryId.value,
+    await moveChapter(resolvedStoryId.value, {
       chapterId: draggingChapter.value.id,
       targetChapterId,
       mode: resolveMoveMode(mode),
@@ -364,8 +363,7 @@ async function fetchChapterList(options?: { reset?: boolean }) {
   loading.value = true
 
   try {
-    const res = await getChapterList({
-      storyId: resolvedStoryId.value,
+    const res = await getChapterList(resolvedStoryId.value, {
       page: 1,
       size: pageSize,
       order: sortOrder.value,
@@ -412,7 +410,7 @@ function handlePreviousMatch(): void {
   }
 
   currentMatchIndex.value =
-    (currentMatchIndex.value - 1 + matchedChapters.value.length) % matchedChapters.value.length
+      (currentMatchIndex.value - 1 + matchedChapters.value.length) % matchedChapters.value.length
   focusCurrentMatch()
 }
 
@@ -470,8 +468,7 @@ async function handleCreateSubmit() {
 
   submitting.value = true
   try {
-    await createChapter({
-      storyId: resolvedStoryId.value,
+    await createChapter(resolvedStoryId.value, {
       parentId: createForm.value.parentId,
       title: createForm.value.title.trim(),
       type: createForm.value.type,
@@ -491,8 +488,7 @@ async function handleEditSubmit() {
 
   submitting.value = true
   try {
-    await updateChapter({
-      id: editForm.value.id,
+    await updateChapter(resolvedStoryId.value, editForm.value.id, {
       title: editForm.value.title.trim(),
     })
     message.success('章节更新成功')
@@ -511,7 +507,7 @@ async function handleDelete(chapter: ChapterItem) {
       : orderedListBeforeDelete[deletedIndex + 1] ?? null
   const shouldMoveSelection = storyStore.currentSelectedChapterId === chapter.id
 
-  await deleteChapter(chapter.id)
+  await deleteChapter(resolvedStoryId.value, chapter.id)
   message.success('章节删除成功')
   await fetchChapterList({reset: true})
 
@@ -611,16 +607,16 @@ watch(normalizedKeyword, () => {
               @drop.prevent="persistMove(undefined, 'root-start')"
           />
           <template v-for="topLevelChapter in topLevelChapters" :key="topLevelChapter.id">
-          <div
-              v-if="sortOrder === 'desc'"
-              class="chapter-slot"
-              :class="{
+            <div
+                v-if="sortOrder === 'desc'"
+                class="chapter-slot"
+                :class="{
               'chapter-slot--visible': !!draggingChapterId && canDrop(draggingChapter, topLevelChapter.id, 'before'),
               'chapter-slot--active': isActiveDropTarget(topLevelChapter.id, 'before'),
             }"
-              @dragover.prevent="setDropTarget(topLevelChapter.id, 'before')"
-              @drop.prevent="persistMove(topLevelChapter.id, 'before')"
-          />
+                @dragover.prevent="setDropTarget(topLevelChapter.id, 'before')"
+                @drop.prevent="persistMove(topLevelChapter.id, 'before')"
+            />
             <div
                 class="chapter-node"
                 :class="{
@@ -641,7 +637,8 @@ watch(normalizedKeyword, () => {
                     {{ chapterTypeMap[topLevelChapter.type] }}
                   </a-tag>
                   <span class="chapter-node__title">
-                    <template v-for="(segment, index) in getHighlightedTitleSegments(topLevelChapter.title)" :key="`${topLevelChapter.id}-${index}`">
+                    <template v-for="(segment, index) in getHighlightedTitleSegments(topLevelChapter.title)"
+                              :key="`${topLevelChapter.id}-${index}`">
                       <mark v-if="segment.matched" class="chapter-node__highlight">{{ segment.text }}</mark>
                       <template v-else>{{ segment.text }}</template>
                     </template>
@@ -722,7 +719,8 @@ watch(normalizedKeyword, () => {
                         {{ chapterTypeMap[childChapter.type] }}
                       </a-tag>
                       <span class="chapter-node__title">
-                        <template v-for="(segment, index) in getHighlightedTitleSegments(childChapter.title)" :key="`${childChapter.id}-${index}`">
+                        <template v-for="(segment, index) in getHighlightedTitleSegments(childChapter.title)"
+                                  :key="`${childChapter.id}-${index}`">
                           <mark v-if="segment.matched" class="chapter-node__highlight">{{ segment.text }}</mark>
                           <template v-else>{{ segment.text }}</template>
                         </template>
