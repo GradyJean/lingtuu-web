@@ -57,7 +57,7 @@ export interface PermissionSubjectResourceItem {
     subjectCode: string
     subjectType: PermissionSubjectType
     resourceId: string
-    resourceType: PermissionResourceType
+    resourceType: string
     identifier: string
     description?: string | null
     mask?: string | null
@@ -74,7 +74,7 @@ export interface SubjectResourceBindParams {
     subjectCode: string
     subjectType: PermissionSubjectType
     identifier: string
-    resourceType: PermissionResourceType
+    resourceType: string
 }
 
 /**

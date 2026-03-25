@@ -21,8 +21,8 @@ export default defineConfig({
     host: '127.0.0.1',
     proxy: {
       '/lingtuu': {
-        target: 'https://www.lingtuu.com',
-        // target: 'http://127.0.0.1:8080',
+        // target: 'https://www.lingtuu.com',
+        target: 'http://127.0.0.1:8080',
         changeOrigin: true,
         secure: false
       }

@@ -27,6 +27,12 @@ const router = createRouter({
             ],
         },
         {
+            path: '/admin/permission/manager',
+            name: 'permissionManager',
+            component: () => import('@views/admin/PermissionManagerView.vue'),
+            meta: {requiresAuth: true, requiresPermission: true},
+        },
+        {
             path: '/auth/wechat/callback',
             name: 'wechat-callback',
             component: () => import('@views/auth/wechat/WechatCallback.vue'),
