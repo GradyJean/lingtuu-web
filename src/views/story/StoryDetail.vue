@@ -16,6 +16,7 @@ import {useStoryStore} from '@stores/story.ts'
 import {ArrowLeftOutlined} from '@ant-design/icons-vue'
 import {storyStatusLabelMap, storyTypeLabelMap} from '@shared-types/story'
 import router from '../../router'
+import Character from "@views/story/Character.vue";
 
 const {token} = theme.useToken()
 const uiStore = uiStateStore()
@@ -32,6 +33,27 @@ const storyTypeText = computed(() => currentStory.value?.type ? storyTypeLabelMa
 const storyStatusText = computed(() => currentStory.value?.status ? storyStatusLabelMap[currentStory.value.status] : '')
 const storyWordCountText = computed(() => `${storyWordCount.value.toLocaleString()} 字`)
 const storyTitle = computed(() => currentStory.value?.title || '章节编辑')
+type WindowPosition = 'left' | 'right'
+
+type PageState = {
+  left: {
+    chapter: boolean
+    character: boolean
+  }
+  right: {
+    database: boolean
+  }
+}
+
+const pageState = ref<PageState>({
+  left: {
+    chapter: true,
+    character: false,
+  },
+  right: {
+    database: true,
+  },
+})
 
 async function fetchStoryWordCount(nextStoryId: string): Promise<void> {
   const chapterPage = await getChapterList(nextStoryId, {
@@ -43,14 +65,31 @@ async function fetchStoryWordCount(nextStoryId: string): Promise<void> {
 }
 
 function menuActive(iconKey: string, isActive: boolean): void {
-  let windowPosition: 'left' | 'right' = 'left'
+  let windowPosition: WindowPosition = 'left'
   switch (iconKey) {
-    case 'project':
+    case 'chapter':
+    case 'character':
       windowPosition = 'left'
       break
     case 'database':
       windowPosition = 'right'
+      break
+    default:
+      return
   }
+
+  if (windowPosition === 'left') {
+    const group = pageState.value.left
+    Object.keys(group).forEach((key) => {
+      group[key as keyof typeof group] = key === iconKey
+    })
+  } else {
+    const group = pageState.value.right
+    Object.keys(group).forEach((key) => {
+      group[key as keyof typeof group] = key === iconKey
+    })
+  }
+
   uiStore.windowShow(windowPosition, isActive)
 }
 
@@ -129,7 +168,8 @@ watch(currentChapterLastSavedAt, (savedAt) => {
     <template #main>
       <WorkContainer>
         <template #left>
-          <ChapterList/>
+          <ChapterList v-if="pageState.left.chapter"/>
+          <Character v-if="pageState.left.character"/>
         </template>
         <template #center>
           <ChapterContent/>
