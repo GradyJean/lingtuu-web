@@ -52,34 +52,34 @@ export interface UpdateStoryParams {
 /**
  * 分页获取作品列表
  */
-export function getStoryList(params: StoryListParams) {
+export function getStoryList(params: StoryListParams): Promise<PageResult<StoryItem>> {
     return appApi.get<PageResult<StoryItem>>('/api/story', params)
 }
 
 /**
  * 根据 ID 获取作品详情
  */
-export function getStoryById(id: string) {
+export function getStoryById(id: string): Promise<StoryMetaItem> {
     return appApi.get<StoryMetaItem>(`/api/story/${id}`)
 }
 
 /**
  * 创建作品
  */
-export function createStory(data: CreateStoryParams) {
+export function createStory(data: CreateStoryParams): Promise<StoryItem> {
     return appApi.put<StoryItem>('/api/story', data)
 }
 
 /**
  * 更新作品
  */
-export function updateStory(id: string, data: UpdateStoryParams) {
+export function updateStory(id: string, data: UpdateStoryParams): Promise<boolean> {
     return appApi.post<boolean>(`/api/story/${id}`, data)
 }
 
 /**
  * 删除作品
  */
-export function deleteStory(id: string) {
+export function deleteStory(id: string): Promise<boolean> {
     return appApi.delete<boolean>(`/api/story/${id}`)
 }

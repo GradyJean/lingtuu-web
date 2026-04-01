@@ -59,56 +59,56 @@ export interface MoveChapterParams {
 /**
  * 分页获取章节列表
  */
-export function getChapterList(storyId: string, params: ChapterListParams) {
-    return appApi.get<PageResult<ChapterItem>>(`/api/chapter/${storyId}`, params)
+export function getChapterList(storyId: string, params: ChapterListParams): Promise<PageResult<ChapterItem>> {
+    return appApi.get<PageResult<ChapterItem>>(`/api/story/chapter/${storyId}`, params)
 }
 
 /**
  * 根据 ID 获取章节详情
  */
-export function getChapterById(storyId: string, id: string) {
-    return appApi.get<ChapterItem>(`/api/chapter/${storyId}/${id}`)
+export function getChapterById(storyId: string, id: string): Promise<ChapterItem> {
+    return appApi.get<ChapterItem>(`/api/story/chapter/${storyId}/${id}`)
 }
 
 /**
  * 根据 ID 获取章节正文
  */
-export function getChapterContentById(storyId: string, id: string) {
-    return appApi.get<ChapterContentItem>(`/api/chapter/${storyId}/${id}/content`)
+export function getChapterContentById(storyId: string, id: string): Promise<ChapterContentItem> {
+    return appApi.get<ChapterContentItem>(`/api/story/chapter/${storyId}/${id}/content`)
 }
 
 /**
  * 创建章节
  */
-export function createChapter(storyId: string, data: CreateChapterParams) {
-    return appApi.put<ChapterItem>(`/api/chapter/${storyId}`, data)
+export function createChapter(storyId: string, data: CreateChapterParams): Promise<ChapterItem> {
+    return appApi.put<ChapterItem>(`/api/story/chapter/${storyId}`, data)
 }
 
 /**
  * 更新章节
  */
-export function updateChapter(storyId: string, id: string, data: UpdateChapterParams) {
-    return appApi.post<boolean>(`/api/chapter/${storyId}/${id}`, data)
+export function updateChapter(storyId: string, id: string, data: UpdateChapterParams): Promise<boolean> {
+    return appApi.post<boolean>(`/api/story/chapter/${storyId}/${id}`, data)
 }
 
 /**
  * 更新章节内容
  */
-export function updateChapterContent(storyId: string, id: string, data: UpdateChapterContentParams) {
-    return appApi.post<boolean>(`/api/chapter/${storyId}/${id}/content`, data)
+export function updateChapterContent(storyId: string, id: string, data: UpdateChapterContentParams): Promise<boolean> {
+    return appApi.post<boolean>(`/api/story/chapter/${storyId}/${id}/content`, data)
 }
 
 /**
  * 根据移动意图调整章节顺序。
  * 排序号由后端统一计算并重排。
  */
-export function moveChapter(storyId: string, data: MoveChapterParams) {
-    return appApi.post<boolean>(`/api/chapter/${storyId}/move`, data)
+export function moveChapter(storyId: string, data: MoveChapterParams): Promise<boolean> {
+    return appApi.post<boolean>(`/api/story/chapter/${storyId}/move`, data)
 }
 
 /**
  * 删除章节
  */
-export function deleteChapter(storyId: string, id: string) {
-    return appApi.delete<boolean>(`/api/chapter/${storyId}/${id}`)
+export function deleteChapter(storyId: string, id: string): Promise<boolean> {
+    return appApi.delete<boolean>(`/api/story/chapter/${storyId}/${id}`)
 }
