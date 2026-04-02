@@ -17,6 +17,7 @@ import {ArrowLeftOutlined} from '@ant-design/icons-vue'
 import {storyStatusLabelMap, storyTypeLabelMap} from '@shared-types/story'
 import router from '../../router'
 import Character from "@views/story/Character.vue";
+import World from "@views/story/World.vue";
 
 const {token} = theme.useToken()
 const uiStore = uiStateStore()
@@ -38,6 +39,7 @@ type WindowPosition = 'left' | 'right'
 type PageState = {
   left: {
     chapter: boolean
+    world: boolean
     character: boolean
   }
   right: {
@@ -48,6 +50,7 @@ type PageState = {
 const pageState = ref<PageState>({
   left: {
     chapter: true,
+    world: false,
     character: false,
   },
   right: {
@@ -67,6 +70,7 @@ async function fetchStoryWordCount(nextStoryId: string): Promise<void> {
 function menuActive(iconKey: string, isActive: boolean): void {
   let windowPosition: WindowPosition = 'left'
   switch (iconKey) {
+    case 'world':
     case 'chapter':
     case 'character':
       windowPosition = 'left'
@@ -156,7 +160,7 @@ watch(currentChapterLastSavedAt, (savedAt) => {
     </template>
     <template #left-side>
       <MenuBar>
-        <MenuItem icon-name="strategy" menu-key="word" tips="背景管理" :default-active="true" @active="menuActive"/>
+        <MenuItem icon-name="strategy" menu-key="world" tips="背景管理" @active="menuActive"/>
         <MenuItem icon-name="work-plan" menu-key="chapter" tips="章节管理" :default-active="true" @active="menuActive"/>
         <MenuItem icon-name="contact" menu-key="character" tips="角色管理" @active="menuActive"/>
       </MenuBar>
@@ -170,6 +174,7 @@ watch(currentChapterLastSavedAt, (savedAt) => {
       <WorkContainer>
         <template #left>
           <ChapterList v-if="pageState.left.chapter"/>
+          <World v-if="pageState.left.world"/>
           <Character v-if="pageState.left.character"/>
         </template>
         <template #center>
