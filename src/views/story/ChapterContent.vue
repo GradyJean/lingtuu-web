@@ -299,7 +299,7 @@ function handleManualSave(): void {
 
 .chapter-content__status {
   flex-shrink: 0;
-  min-width: 800px;
+  min-width: 785px;
   padding: 8px 15px 10px;
   border-bottom: 1px solid v-bind('token.colorBorderSecondary');
   display: flex;

@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import {computed, reactive, ref} from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 import {theme} from 'ant-design-vue'
-import {CheckOutlined, DeleteOutlined, PlusOutlined} from '@ant-design/icons-vue'
+import {BulbOutlined, CheckOutlined, DeleteOutlined, PlusOutlined} from '@ant-design/icons-vue'
 import {useRoute} from 'vue-router'
 import {
   createStoryCharacter,
+  deleteStoryCharacter,
+  getStoryCharacterList,
   getStoryCharacterTagOptions,
+  type StoryCharacterItem,
   type StoryCharacterTagOptionItem,
+  updateStoryCharacter,
 } from '@api/story/character.ts'
 
 const {token} = theme.useToken()
@@ -25,9 +29,13 @@ interface TagDraftRow {
 const storyId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
 const createModalOpen = ref(false)
 const createSubmitting = ref(false)
+const deleteSubmitting = ref(false)
+const characterListLoading = ref(false)
+const characterList = ref<StoryCharacterItem[]>([])
 const tagOptionLoading = ref(false)
 const tagOptions = ref<StoryCharacterTagOptionItem[]>([])
 const tagDraftRows = ref<TagDraftRow[]>([])
+const editingCharacterId = ref('')
 let tagDraftSeed = 0
 
 const createForm = reactive({
@@ -103,8 +111,37 @@ function removeTag(tag: string): void {
   createForm.tags = createForm.tags.filter((item) => item !== tag)
 }
 
+async function fetchCharacterList(): Promise<void> {
+  if (!storyId.value) {
+    characterList.value = []
+    return
+  }
+
+  characterListLoading.value = true
+  try {
+    const page = await getStoryCharacterList(storyId.value, {
+      page: 1,
+      size: 2000,
+    })
+    characterList.value = page.list
+  } finally {
+    characterListLoading.value = false
+  }
+}
+
 async function openCreateModal(): Promise<void> {
   resetCreateForm()
+  editingCharacterId.value = ''
+  createModalOpen.value = true
+  await ensureTagOptionsLoaded()
+}
+
+async function openEditModal(character: StoryCharacterItem): Promise<void> {
+  createForm.name = character.name
+  createForm.description = character.description ?? ''
+  createForm.tags = [...(character.tags ?? [])]
+  tagDraftRows.value = []
+  editingCharacterId.value = character.id
   createModalOpen.value = true
   await ensureTagOptionsLoaded()
 }
@@ -115,6 +152,81 @@ function handleCreateCharacter(): void {
   }
   void openCreateModal()
 }
+
+function handleAiGenerate(): void {
+  console.log('open ai generate dialog')
+}
+
+function handleEditCharacter(character: StoryCharacterItem): void {
+  void openEditModal(character)
+}
+
+const modalTitle = computed(() => editingCharacterId.value ? '编辑角色' : '新建角色')
+const modalOkText = computed(() => editingCharacterId.value ? '保存' : '创建')
+const roleTagValues = computed(() => {
+  const roleOption = tagOptions.value.find((item) => item.key === '角色')
+  return roleOption?.values ?? []
+})
+
+function resolveCharacterRole(character: StoryCharacterItem): string {
+  const tags = character.tags ?? []
+  const roleTag = tags.find((tag) => tag.startsWith('角色:') || tag.startsWith('角色：'))
+  if (!roleTag) {
+    return ''
+  }
+  const [, value = ''] = roleTag.split(/[:：]/)
+  return value.trim()
+}
+
+function resolveCharacterGender(character: StoryCharacterItem): string {
+  const tags = character.tags ?? []
+  const genderTag = tags.find((tag) => tag.startsWith('性别:') || tag.startsWith('性别：'))
+  if (!genderTag) {
+    return ''
+  }
+  const [, value = ''] = genderTag.split(/[:：]/)
+  return value.trim()
+}
+
+function resolveCharacterColor(character: StoryCharacterItem): string {
+  const gender = resolveCharacterGender(character)
+  if (gender === '男') {
+    return 'blue'
+  }
+  if (gender === '女') {
+    return 'pink'
+  }
+  return 'green'
+}
+
+const groupedCharacterList = computed(() => {
+  const groupMap = new Map<string, StoryCharacterItem[]>()
+  const ungrouped: StoryCharacterItem[] = []
+
+  for (const character of characterList.value) {
+    const role = resolveCharacterRole(character)
+    if (!role || !roleTagValues.value.includes(role)) {
+      ungrouped.push(character)
+      continue
+    }
+    const list = groupMap.get(role) ?? []
+    list.push(character)
+    groupMap.set(role, list)
+  }
+
+  const groups = roleTagValues.value
+    .map((role) => ({
+      key: role,
+      title: role,
+      list: groupMap.get(role) ?? [],
+    }))
+    .filter((group) => group.list.length > 0)
+
+  return {
+    groups,
+    ungrouped,
+  }
+})
 
 async function handleCreateSubmit(): Promise<void> {
   if (!storyId.value || createSubmitting.value) {
@@ -128,38 +240,136 @@ async function handleCreateSubmit(): Promise<void> {
 
   createSubmitting.value = true
   try {
-    await createStoryCharacter(storyId.value, {
+    const payload = {
       name,
       description: createForm.description.trim() || undefined,
       tags: createForm.tags.length ? createForm.tags : undefined,
-    })
+    }
+
+    if (editingCharacterId.value) {
+      await updateStoryCharacter(storyId.value, editingCharacterId.value, payload)
+    } else {
+      await createStoryCharacter(storyId.value, payload)
+    }
+
+    await fetchCharacterList()
     createModalOpen.value = false
   } finally {
     createSubmitting.value = false
   }
 }
+
+async function handleDeleteCharacter(): Promise<void> {
+  if (!storyId.value || !editingCharacterId.value || deleteSubmitting.value) {
+    return
+  }
+
+  deleteSubmitting.value = true
+  try {
+    await deleteStoryCharacter(storyId.value, editingCharacterId.value)
+    await fetchCharacterList()
+    createModalOpen.value = false
+  } finally {
+    deleteSubmitting.value = false
+  }
+}
+
+watch(
+  () => storyId.value,
+  () => {
+    void fetchCharacterList()
+    void ensureTagOptionsLoaded()
+  },
+  {immediate: true}
+)
 </script>
 
 <template>
   <div class="character-panel">
     <div class="character-panel__toolbar">
       <span class="character-panel__title-text">角色</span>
-      <a-button type="primary" size="small" @click="handleCreateCharacter">
-        <template #icon>
-          <PlusOutlined/>
-        </template>
-        新建
-      </a-button>
+      <div class="character-panel__actions">
+        <a-button type="primary"  size="small" @click="handleAiGenerate">
+          <template #icon>
+            <BulbOutlined/>
+          </template>
+          AI生成
+        </a-button>
+        <a-button type="primary" size="small" @click="handleCreateCharacter">
+          <template #icon>
+            <PlusOutlined/>
+          </template>
+          新建
+        </a-button>
+      </div>
+    </div>
+
+    <div class="character-panel__content">
+      <a-spin :spinning="characterListLoading">
+        <div v-if="characterList.length" class="character-content">
+          <section
+            v-for="group in groupedCharacterList.groups"
+            :key="group.key"
+            class="character-group"
+          >
+            <div class="character-group__title">{{ group.title }}</div>
+            <div class="character-list">
+              <a-tag
+                v-for="character in group.list"
+                :key="character.id"
+                :color="resolveCharacterColor(character)"
+                class="character-list__tag"
+                @click="handleEditCharacter(character)"
+              >
+                {{ character.name }}
+              </a-tag>
+            </div>
+          </section>
+
+          <div v-if="groupedCharacterList.ungrouped.length" class="character-list">
+            <a-tag
+              v-for="character in groupedCharacterList.ungrouped"
+              :key="character.id"
+              :color="resolveCharacterColor(character)"
+              class="character-list__tag"
+              @click="handleEditCharacter(character)"
+            >
+              {{ character.name }}
+            </a-tag>
+          </div>
+        </div>
+        <a-empty v-else description="暂无角色" />
+      </a-spin>
     </div>
 
     <a-modal
         v-model:open="createModalOpen"
-        title="新建角色"
-        ok-text="创建"
+        :title="modalTitle"
+        :ok-text="modalOkText"
         cancel-text="取消"
         :confirm-loading="createSubmitting"
         @ok="handleCreateSubmit"
     >
+      <template #footer>
+        <div class="character-modal__footer">
+          <a-popconfirm
+            v-if="editingCharacterId"
+            title="确定删除这个角色吗？"
+            ok-text="删除"
+            cancel-text="取消"
+            @confirm="handleDeleteCharacter"
+          >
+            <a-button  danger :loading="deleteSubmitting">删除</a-button>
+          </a-popconfirm>
+          <div class="character-modal__footer-right">
+            <a-button @click="createModalOpen = false">取消</a-button>
+            <a-button type="primary" :loading="createSubmitting" @click="handleCreateSubmit">
+              {{ modalOkText }}
+            </a-button>
+          </div>
+        </div>
+      </template>
+
       <a-form layout="vertical">
         <a-form-item label="角色名" required>
           <a-input v-model:value="createForm.name" :maxlength="200" placeholder="请输入角色名"/>
@@ -248,7 +458,11 @@ async function handleCreateSubmit(): Promise<void> {
 <style scoped>
 .character-panel {
   height: 100%;
+  width: 100%;
+  min-width: 290px;
   background: v-bind('token.colorBgContainer');
+  display: flex;
+  flex-direction: column;
 }
 
 .character-panel__toolbar {
@@ -264,6 +478,51 @@ async function handleCreateSubmit(): Promise<void> {
   font-size: 15px;
   font-weight: 600;
   color: v-bind('token.colorText');
+}
+
+.character-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.character-panel__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.character-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.character-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.character-group__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: v-bind('token.colorTextSecondary');
+}
+
+.character-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.character-list__tag {
+  margin: 0;
+  cursor: pointer;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
 }
 
 .tag-inline {
@@ -303,5 +562,18 @@ async function handleCreateSubmit(): Promise<void> {
 
 .tag-row__custom {
   width: 290px;
+}
+
+.character-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.character-modal__footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>
