@@ -1,121 +1,149 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import {computed, reactive, ref} from 'vue'
 import {theme} from 'ant-design-vue'
-import {BulbOutlined, PlusOutlined, UserOutlined} from '@ant-design/icons-vue'
-
-type CharacterItem = {
-  id: string
-  name: string
-  tags: string[]
-}
-
-type CharacterGroup = {
-  key: string
-  title: string
-  list: CharacterItem[]
-}
+import {CheckOutlined, DeleteOutlined, PlusOutlined} from '@ant-design/icons-vue'
+import {useRoute} from 'vue-router'
+import {
+  createStoryCharacter,
+  getStoryCharacterTagOptions,
+  type StoryCharacterTagOptionItem,
+} from '@api/story/character.ts'
 
 const {token} = theme.useToken()
+const route = useRoute()
 
-const activeCharacterId = ref('1')
+type TagDraftMode = 'preset' | 'custom'
 
-const characterList = ref<CharacterItem[]>([
-  {
-    id: '1',
-    name: '沈砚',
-    tags: ['主角:男主', '性别:男', '年龄:22岁'],
-  },
-  {
-    id: '2',
-    name: '林知夏',
-    tags: ['主角:女主', '性别:女', '年龄:21岁'],
-  },
-  {
-    id: '3',
-    name: '周渡',
-    tags: ['配角:同伴', '性别:男'],
-  },
-  {
-    id: '4',
-    name: '贺沉',
-    tags: ['反派:幕后者', '性别:男'],
-  },
-  {
-    id: '5',
-    name: '阿宁',
-    tags: ['性别:女'],
-  },
-])
-
-function resolveGroupTitle(tags: string[]): string {
-  const preferredKeys = ['主角', '配角', '反派']
-
-  for (const key of preferredKeys) {
-    const matched = tags.find((tag) => tag.startsWith(`${key}:`))
-    if (matched) {
-      const value = matched.slice(key.length + 1).trim()
-      return value || key
-    }
-  }
-
-  return '未分类'
+interface TagDraftRow {
+  id: number
+  mode: TagDraftMode
+  key: string
+  value: string
+  custom: string
 }
 
-const groupedCharacters = computed<CharacterGroup[]>(() => {
-  const map = new Map<string, CharacterItem[]>()
+const storyId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
+const createModalOpen = ref(false)
+const createSubmitting = ref(false)
+const tagOptionLoading = ref(false)
+const tagOptions = ref<StoryCharacterTagOptionItem[]>([])
+const tagDraftRows = ref<TagDraftRow[]>([])
+let tagDraftSeed = 0
 
-  characterList.value.forEach((item) => {
-    const title = resolveGroupTitle(item.tags)
-    const current = map.get(title) ?? []
-    current.push(item)
-    map.set(title, current)
-  })
-
-  const priorityOrder = ['男主', '女主', '主角', '配角', '反派', '未分类']
-
-  return Array.from(map.entries())
-    .map(([title, list]) => ({
-      key: title,
-      title,
-      list,
-    }))
-    .sort((a, b) => {
-      const aIndex = priorityOrder.indexOf(a.title)
-      const bIndex = priorityOrder.indexOf(b.title)
-
-      if (aIndex === -1 && bIndex === -1) {
-        return a.title.localeCompare(b.title, 'zh-CN')
-      }
-      if (aIndex === -1) {
-        return 1
-      }
-      if (bIndex === -1) {
-        return -1
-      }
-      return aIndex - bIndex
-    })
+const createForm = reactive({
+  name: '',
+  description: '',
+  tags: [] as string[],
 })
 
-function handleSelectCharacter(id: string): void {
-  activeCharacterId.value = id
+function resetCreateForm(): void {
+  createForm.name = ''
+  createForm.description = ''
+  createForm.tags = []
+  tagDraftRows.value = []
+}
+
+async function ensureTagOptionsLoaded(): Promise<void> {
+  if (tagOptionLoading.value || tagOptions.value.length > 0) {
+    return
+  }
+  tagOptionLoading.value = true
+  try {
+    tagOptions.value = await getStoryCharacterTagOptions()
+  } finally {
+    tagOptionLoading.value = false
+  }
+}
+
+function addTagDraftRow(): void {
+  const firstOption = tagOptions.value[0]
+  const defaultKey = firstOption?.key ?? ''
+  const defaultValue = firstOption?.values?.[0] ?? ''
+
+  tagDraftSeed += 1
+  tagDraftRows.value.push({
+    id: tagDraftSeed,
+    mode: 'preset',
+    key: defaultKey,
+    value: defaultValue,
+    custom: '',
+  })
+}
+
+function removeTagDraftRow(id: number): void {
+  tagDraftRows.value = tagDraftRows.value.filter((row) => row.id !== id)
+}
+
+function onTagDraftKeyChange(row: TagDraftRow): void {
+  row.value = getValuesByKey(row.key)[0] ?? ''
+}
+
+function getValuesByKey(key: string): string[] {
+  const option = tagOptions.value.find((item) => item.key === key)
+  return option?.values ?? []
+}
+
+function addTagFromRow(row: TagDraftRow): void {
+  const nextTag = row.mode === 'preset'
+      ? `${row.key}:${row.value}`.trim()
+      : row.custom.trim()
+
+  if (!nextTag || nextTag === ':') {
+    return
+  }
+
+  if (!createForm.tags.includes(nextTag)) {
+    createForm.tags.push(nextTag)
+  }
+
+  removeTagDraftRow(row.id)
+}
+
+function removeTag(tag: string): void {
+  createForm.tags = createForm.tags.filter((item) => item !== tag)
+}
+
+async function openCreateModal(): Promise<void> {
+  resetCreateForm()
+  createModalOpen.value = true
+  await ensureTagOptionsLoaded()
 }
 
 function handleCreateCharacter(): void {
-  console.log('open character detail drawer for create')
+  if (!storyId.value) {
+    return
+  }
+  void openCreateModal()
 }
 
-function handleOpenAi(): void {
-  console.log('open character ai drawer')
+async function handleCreateSubmit(): Promise<void> {
+  if (!storyId.value || createSubmitting.value) {
+    return
+  }
+
+  const name = createForm.name.trim()
+  if (!name) {
+    return
+  }
+
+  createSubmitting.value = true
+  try {
+    await createStoryCharacter(storyId.value, {
+      name,
+      description: createForm.description.trim() || undefined,
+      tags: createForm.tags.length ? createForm.tags : undefined,
+    })
+    createModalOpen.value = false
+  } finally {
+    createSubmitting.value = false
+  }
 }
 </script>
 
 <template>
   <div class="character-panel">
     <div class="character-panel__toolbar">
-      <div class="character-panel__title">
-        <span class="character-panel__title-text">角色</span>
-        <span class="character-panel__count">{{ characterList.length }}</span>
-      </div>
+      <span class="character-panel__title-text">角色</span>
       <a-button type="primary" size="small" @click="handleCreateCharacter">
         <template #icon>
           <PlusOutlined/>
@@ -124,57 +152,102 @@ function handleOpenAi(): void {
       </a-button>
     </div>
 
-    <div class="character-panel__content">
-      <template v-if="groupedCharacters.length">
-        <section
-          v-for="group in groupedCharacters"
-          :key="group.key"
-          class="character-group"
-        >
-          <div class="character-group__header">
-            <span class="character-group__title">{{ group.title }}</span>
-            <span class="character-group__count">{{ group.list.length }}</span>
-          </div>
+    <a-modal
+        v-model:open="createModalOpen"
+        title="新建角色"
+        ok-text="创建"
+        cancel-text="取消"
+        :confirm-loading="createSubmitting"
+        @ok="handleCreateSubmit"
+    >
+      <a-form layout="vertical">
+        <a-form-item label="角色名" required>
+          <a-input v-model:value="createForm.name" :maxlength="200" placeholder="请输入角色名"/>
+        </a-form-item>
 
-          <div class="character-group__list">
-            <button
-              v-for="item in group.list"
-              :key="item.id"
-              type="button"
-              class="character-item"
-              :class="{'character-item--active': activeCharacterId === item.id}"
-              @click="handleSelectCharacter(item.id)"
+        <a-form-item label="角色描述">
+          <a-textarea
+              v-model:value="createForm.description"
+              :maxlength="5000"
+              :rows="4"
+              placeholder="请输入角色描述"
+          />
+        </a-form-item>
+
+        <a-form-item>
+          <template #label>
+            <span class="tag-label">
+              <span>标签</span>
+              <a-button size="small" type="primary" :loading="tagOptionLoading" @click="addTagDraftRow">
+               <template #icon>
+                <PlusOutlined/>
+               </template>
+              </a-button>
+            </span>
+          </template>
+          <div class="tag-inline">
+            <a-tag
+                v-for="tag in createForm.tags"
+                :key="tag"
+                closable
+                @close.prevent="removeTag(tag)"
             >
-              <UserOutlined class="character-item__icon"/>
-              <span class="character-item__name">{{ item.name }}</span>
-            </button>
+              {{ tag }}
+            </a-tag>
+
+            <div v-for="row in tagDraftRows" :key="row.id" class="tag-row">
+              <a-select v-model:value="row.mode" size="small" class="tag-row__mode">
+                <a-select-option value="preset">预置</a-select-option>
+                <a-select-option value="custom">自定义</a-select-option>
+              </a-select>
+
+              <template v-if="row.mode === 'preset'">
+                <a-select
+                    v-model:value="row.key"
+                    size="small"
+                    class="tag-row__key"
+                    placeholder="属性"
+                    @change="onTagDraftKeyChange(row)"
+                >
+                  <a-select-option v-for="item in tagOptions" :key="item.key" :value="item.key">
+                    {{ item.key }}
+                  </a-select-option>
+                </a-select>
+                <a-select v-model:value="row.value" size="small" class="tag-row__value" placeholder="值">
+                  <a-select-option v-for="value in getValuesByKey(row.key)" :key="value" :value="value">
+                    {{ value }}
+                  </a-select-option>
+                </a-select>
+              </template>
+
+              <a-input
+                  v-else
+                  v-model:value="row.custom"
+                  size="small"
+                  class="tag-row__custom"
+                  placeholder="请输入自定义标签"
+              />
+              <a-button size="small" type="primary" @click="addTagFromRow(row)">
+                <template #icon>
+                  <CheckOutlined/>
+                </template>
+              </a-button>
+              <a-button size="small" danger @click="removeTagDraftRow(row.id)">
+                <template #icon>
+                  <DeleteOutlined/>
+                </template>
+              </a-button>
+            </div>
           </div>
-        </section>
-      </template>
-
-      <a-empty v-else description="暂无角色数据"/>
-    </div>
-
-    <div class="character-panel__footer">
-      <div class="character-panel__footer-text">
-        <div class="character-panel__footer-title">AI 辅助</div>
-        <div class="character-panel__footer-desc">生成角色名与结构化候选信息</div>
-      </div>
-      <a-button size="small" @click="handleOpenAi">
-        <template #icon>
-          <BulbOutlined/>
-        </template>
-        打开
-      </a-button>
-    </div>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
 <style scoped>
 .character-panel {
   height: 100%;
-  display: flex;
-  flex-direction: column;
   background: v-bind('token.colorBgContainer');
 }
 
@@ -187,131 +260,48 @@ function handleOpenAi(): void {
   border-bottom: 1px solid v-bind('token.colorBorderSecondary');
 }
 
-.character-panel__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
 .character-panel__title-text {
   font-size: 15px;
   font-weight: 600;
   color: v-bind('token.colorText');
 }
 
-.character-panel__count {
-  min-width: 22px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: v-bind('token.colorFillSecondary');
-  color: v-bind('token.colorTextSecondary');
-  font-size: 12px;
-  text-align: center;
-}
-
-.character-panel__content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-
-.character-group + .character-group {
-  margin-top: 16px;
-}
-
-.character-group__header {
+.tag-inline {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+}
+
+:deep(.tag-inline .ant-tag) {
+  height: 28px;
+  line-height: 26px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.tag-label {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
-.character-group__title {
-  font-size: 12px;
-  font-weight: 600;
-  color: v-bind('token.colorTextTertiary');
-  letter-spacing: 0.04em;
-}
-
-.character-group__count {
-  color: v-bind('token.colorTextQuaternary');
-  font-size: 12px;
-}
-
-.character-group__list {
-  display: flex;
-  flex-direction: column;
+.tag-row {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
+  margin-top: 5px;
 }
 
-.character-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid transparent;
-  border-radius: v-bind('`${token.borderRadius}px`');
-  background: transparent;
-  color: v-bind('token.colorText');
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+.tag-row__mode {
+  width: 108px;
 }
 
-.character-item:hover {
-  background: v-bind('token.colorBgTextHover');
-  border-color: v-bind('token.colorBorderSecondary');
+.tag-row__key,
+.tag-row__value {
+  width: 142px;
 }
 
-.character-item--active {
-  background: v-bind('token.colorPrimaryBg');
-  border-color: v-bind('token.colorPrimaryBorder');
-  color: v-bind('token.colorPrimary');
-}
-
-.character-item__icon {
-  font-size: 14px;
-  color: inherit;
-  opacity: 0.85;
-}
-
-.character-item__name {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.character-panel__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border-top: 1px solid v-bind('token.colorBorderSecondary');
-  background: v-bind('token.colorFillQuaternary');
-}
-
-.character-panel__footer-text {
-  min-width: 0;
-}
-
-.character-panel__footer-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: v-bind('token.colorText');
-}
-
-.character-panel__footer-desc {
-  margin-top: 2px;
-  color: v-bind('token.colorTextSecondary');
-  font-size: 12px;
-  line-height: 1.4;
+.tag-row__custom {
+  width: 290px;
 }
 </style>
