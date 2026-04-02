@@ -289,7 +289,7 @@ watch(
     <div class="character-panel__toolbar">
       <span class="character-panel__title-text">角色</span>
       <div class="character-panel__actions">
-        <a-button type="primary"  size="small" @click="handleAiGenerate">
+        <a-button type="primary" size="small" @click="handleAiGenerate">
           <template #icon>
             <BulbOutlined/>
           </template>

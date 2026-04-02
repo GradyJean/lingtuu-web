@@ -156,6 +156,7 @@ watch(currentChapterLastSavedAt, (savedAt) => {
     </template>
     <template #left-side>
       <MenuBar>
+        <MenuItem icon-name="strategy" menu-key="word" tips="背景管理" :default-active="true" @active="menuActive"/>
         <MenuItem icon-name="work-plan" menu-key="chapter" tips="章节管理" :default-active="true" @active="menuActive"/>
         <MenuItem icon-name="contact" menu-key="character" tips="角色管理" @active="menuActive"/>
       </MenuBar>

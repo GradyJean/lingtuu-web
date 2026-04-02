@@ -345,7 +345,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-width: 800px;
+  min-width: 785px;
   padding: 15px 15px 12px;
   border-bottom: 1px solid v-bind('token.colorBorderSecondary');
   flex-shrink: 0;
