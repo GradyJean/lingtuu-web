@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, reactive, ref, watch} from 'vue'
 import {theme} from 'ant-design-vue'
-import {BulbOutlined, CheckOutlined,MinusOutlined, PlusOutlined} from '@ant-design/icons-vue'
+import {BulbOutlined, CheckOutlined, MinusOutlined, PlusOutlined} from '@ant-design/icons-vue'
 import {useRoute} from 'vue-router'
 import {
   createStoryCharacter,
@@ -165,6 +165,10 @@ function handleEditCharacter(character: StoryCharacterItem): void {
 
 const modalTitle = computed(() => editingCharacterId.value ? '编辑角色' : '新建角色')
 const modalOkText = computed(() => editingCharacterId.value ? '保存' : '创建')
+const tagAddPlaceholderStyle = computed(() => ({
+  borderColor: token.value.colorTextTertiary,
+  color: token.value.colorTextTertiary,
+}))
 const roleTagValues = computed(() => {
   const roleOption = tagOptions.value.find((item) => item.key === '角色')
   return roleOption?.values ?? []
@@ -217,12 +221,12 @@ const groupedCharacterList = computed(() => {
   }
 
   const groups = roleTagValues.value
-    .map((role) => ({
-      key: role,
-      title: role,
-      list: groupMap.get(role) ?? [],
-    }))
-    .filter((group) => group.list.length > 0)
+      .map((role) => ({
+        key: role,
+        title: role,
+        list: groupMap.get(role) ?? [],
+      }))
+      .filter((group) => group.list.length > 0)
 
   return {
     groups,
@@ -277,12 +281,12 @@ async function handleDeleteCharacter(): Promise<void> {
 }
 
 watch(
-  () => storyId.value,
-  () => {
-    void fetchCharacterList()
-    void ensureTagOptionsLoaded()
-  },
-  {immediate: true}
+    () => storyId.value,
+    () => {
+      void fetchCharacterList()
+      void ensureTagOptionsLoaded()
+    },
+    {immediate: true}
 )
 </script>
 
@@ -310,18 +314,18 @@ watch(
       <a-spin :spinning="characterListLoading">
         <div v-if="characterList.length" class="character-content">
           <section
-            v-for="group in groupedCharacterList.groups"
-            :key="group.key"
-            class="character-group"
+              v-for="group in groupedCharacterList.groups"
+              :key="group.key"
+              class="character-group"
           >
             <div class="character-group__title">{{ group.title }}</div>
             <div class="character-list">
               <a-tag
-                v-for="character in group.list"
-                :key="character.id"
-                :color="resolveCharacterColor(character)"
-                class="character-list__tag"
-                @click="handleEditCharacter(character)"
+                  v-for="character in group.list"
+                  :key="character.id"
+                  :color="resolveCharacterColor(character)"
+                  class="character-list__tag"
+                  @click="handleEditCharacter(character)"
               >
                 {{ character.name }}
               </a-tag>
@@ -330,17 +334,17 @@ watch(
 
           <div v-if="groupedCharacterList.ungrouped.length" class="character-list">
             <a-tag
-              v-for="character in groupedCharacterList.ungrouped"
-              :key="character.id"
-              :color="resolveCharacterColor(character)"
-              class="character-list__tag"
-              @click="handleEditCharacter(character)"
+                v-for="character in groupedCharacterList.ungrouped"
+                :key="character.id"
+                :color="resolveCharacterColor(character)"
+                class="character-list__tag"
+                @click="handleEditCharacter(character)"
             >
               {{ character.name }}
             </a-tag>
           </div>
         </div>
-        <a-empty v-else description="暂无角色" />
+        <a-empty v-else description="暂无角色"/>
       </a-spin>
     </div>
 
@@ -355,13 +359,13 @@ watch(
       <template #footer>
         <div class="character-modal__footer">
           <a-popconfirm
-            v-if="editingCharacterId"
-            title="确定删除这个角色吗？"
-            ok-text="删除"
-            cancel-text="取消"
-            @confirm="handleDeleteCharacter"
+              v-if="editingCharacterId"
+              title="确定删除这个角色吗？"
+              ok-text="删除"
+              cancel-text="取消"
+              @confirm="handleDeleteCharacter"
           >
-            <a-button  danger :loading="deleteSubmitting">删除</a-button>
+            <a-button danger :loading="deleteSubmitting">删除</a-button>
           </a-popconfirm>
           <div class="character-modal__footer-right">
             <a-button @click="createModalOpen = false">取消</a-button>
@@ -390,17 +394,6 @@ watch(
           <template #label>
             <span class="tag-label">
               <span>标签</span>
-              <a-button
-                size="small"
-                type="primary"
-                class="tag-label__add-btn"
-                :loading="tagOptionLoading"
-                @click="addTagDraftRow"
-              >
-               <template #icon>
-                <PlusOutlined/>
-               </template>
-              </a-button>
             </span>
           </template>
           <div class="tag-inline">
@@ -412,7 +405,7 @@ watch(
             >
               {{ tag }}
             </a-tag>
-
+            <a-tag class="tag-label__add-placeholder" :style="tagAddPlaceholderStyle" @click="addTagDraftRow">+</a-tag>
             <div v-for="row in tagDraftRows" :key="row.id" class="tag-row">
               <a-select v-model:value="row.mode" size="small" class="tag-row__mode">
                 <a-select-option value="preset">预置</a-select-option>
@@ -450,7 +443,7 @@ watch(
                   <CheckOutlined/>
                 </template>
               </a-button>
-              <a-button size="small" danger  @click="removeTagDraftRow(row.id)">
+              <a-button size="small" danger @click="removeTagDraftRow(row.id)">
                 <template #icon>
                   <MinusOutlined/>
                 </template>
@@ -537,13 +530,14 @@ watch(
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 6px;
 }
 
 :deep(.tag-inline .ant-tag) {
   height: 28px;
   line-height: 26px;
-  padding: 0 10px;
   font-size: 13px;
+  margin-inline-end: 0;
 }
 
 .tag-label {
@@ -552,25 +546,17 @@ watch(
   gap: 8px;
 }
 
-.tag-label__add-btn {
-  width: 23px !important;
-  min-width: 23px !important;
-  height: 23px !important;
-  min-height: 23px !important;
-  padding: 0 !important;
-}
-
-:deep(.tag-label__add-btn .ant-btn-icon) {
-  margin-inline-end: 0 !important;
-  width: 100%;
-  height: 100%;
+.tag-label__add-placeholder {
+  width: 40px;
+  min-width: 40px;
+  max-height: 25px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-:deep(.tag-label__add-btn .anticon) {
-  line-height: 1;
+  border-style: dashed;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
 }
 
 .tag-row {

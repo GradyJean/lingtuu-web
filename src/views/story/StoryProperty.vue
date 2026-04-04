@@ -20,7 +20,6 @@ import {
   type StoryType,
 } from '@api/story/story.ts'
 import {getStoryTagOptions, type StoryTagOptionItem} from '@api/story/tagOption.ts'
-import {PlusOutlined} from '@ant-design/icons-vue'
 
 const {token} = theme.useToken()
 const route = useRoute()
@@ -33,12 +32,15 @@ const tagModalOpen = ref(false)
 const tagOptionLoading = ref(false)
 const tagOptions = ref<StoryTagOptionItem[]>([])
 const selectedTagMap = reactive<Record<string, string[]>>({})
+const customTagValues = ref<string[]>([])
+const customTagInput = ref('')
 
 const tagLimitMap: Record<string, number> = {
   题材: 1,
   时空: 1,
   情节: 3,
   情绪: 3,
+  自定义: 5,
 }
 
 const formState = reactive({
@@ -103,13 +105,19 @@ watch(
 const saveDisabled = computed(() => !storyId.value || !formState.title.trim() || saving.value)
 
 function parsePresetTag(tag: string): { key: string; value: string } | null {
-  const [key = '', value = ''] = tag.split(':')
+  const raw = tag.trim()
+  const separatorIndex = raw.search(/[:：]/)
+  if (separatorIndex <= 0 || separatorIndex >= raw.length - 1) {
+    return null
+  }
+  const key = raw.slice(0, separatorIndex).trim()
+  const value = raw.slice(separatorIndex + 1).trim()
   if (!key || !value) {
     return null
   }
   return {
-    key: key.trim(),
-    value: value.trim(),
+    key,
+    value,
   }
 }
 
@@ -133,15 +141,23 @@ function resetSelectedTagMap(): void {
   for (const key of Object.keys(selectedTagMap)) {
     delete selectedTagMap[key]
   }
+  customTagValues.value = []
+  customTagInput.value = ''
 
   const optionMap = new Map(tagOptions.value.map((option) => [option.key, new Set(option.values)]))
   for (const tag of formState.tags) {
     const parsed = parsePresetTag(tag)
     if (!parsed) {
+      if (!customTagValues.value.includes(tag)) {
+        customTagValues.value.push(tag)
+      }
       continue
     }
     const allowedValues = optionMap.get(parsed.key)
     if (!allowedValues?.has(parsed.value)) {
+      if (!customTagValues.value.includes(tag)) {
+        customTagValues.value.push(tag)
+      }
       continue
     }
     const list = selectedTagMap[parsed.key] ?? []
@@ -181,12 +197,6 @@ async function handleOpenTagModal(): Promise<void> {
 }
 
 function handleTagModalConfirm(): void {
-  const optionKeySet = new Set(tagOptions.value.map((option) => option.key))
-  const preservedTags = formState.tags.filter((tag) => {
-    const parsed = parsePresetTag(tag)
-    return !parsed || !optionKeySet.has(parsed.key)
-  })
-
   const selectedTags: string[] = []
   for (const option of tagOptions.value) {
     const values = selectedTagMap[option.key] ?? []
@@ -195,8 +205,34 @@ function handleTagModalConfirm(): void {
     }
   }
 
-  formState.tags = [...selectedTags, ...preservedTags]
+  const normalizedCustomTags = customTagValues.value
+      .map((item) => item.trim())
+      .filter((item) => !!item)
+
+  formState.tags = [...selectedTags, ...normalizedCustomTags]
   tagModalOpen.value = false
+}
+
+function addCustomTagFromInput(): void {
+  const nextTag = customTagInput.value.trim()
+  if (!nextTag) {
+    return
+  }
+  if (customTagValues.value.includes(nextTag)) {
+    customTagInput.value = ''
+    return
+  }
+  const customLimit = getTagLimit('自定义')
+  if (customTagValues.value.length >= customLimit) {
+    message.warning(`自定义最多 ${customLimit} 个`)
+    return
+  }
+  customTagValues.value = [...customTagValues.value, nextTag]
+  customTagInput.value = ''
+}
+
+function removeCustomTag(tag: string): void {
+  customTagValues.value = customTagValues.value.filter((item) => item !== tag)
 }
 
 async function handleSave(): Promise<void> {
@@ -270,22 +306,15 @@ async function handleSave(): Promise<void> {
 
         <a-form-item>
           <template #label>
-              <span class="story-property-panel__tag-label">
-                <span>标签</span>
-                <a-button type="primary" class="story-property-panel__tag-add-btn" @click="handleOpenTagModal">
-                  <template #icon>
-                    <PlusOutlined/>
-                  </template>
-              </a-button>
+            <span class="story-property-panel__tag-label">
+              <span>标签</span>
             </span>
           </template>
-          <a-select
-              v-model:value="formState.tags"
-              mode="tags"
-              :max-tag-count="4"
-              placeholder="输入后回车添加标签"
-              :token-separators="[',', '，']"
-          />
+          <div class="story-property-panel__selected-tags">
+            <a-tag class="story-property-panel__tag-add-placeholder" @click="handleOpenTagModal">+
+            </a-tag>
+            <a-tag color="orange" v-for="tag in formState.tags" :key="tag">{{ tag }}</a-tag>
+          </div>
         </a-form-item>
 
         <a-form-item label="作品大纲">
@@ -301,19 +330,19 @@ async function handleSave(): Promise<void> {
     </div>
 
     <a-modal
-      v-model:open="tagModalOpen"
-      title="标签"
-      width="980px"
-      ok-text="确定"
-      cancel-text="取消"
-      @ok="handleTagModalConfirm"
+        v-model:open="tagModalOpen"
+        title="标签"
+        width="980px"
+        ok-text="确定"
+        cancel-text="取消"
+        @ok="handleTagModalConfirm"
     >
       <a-spin :spinning="tagOptionLoading">
         <div class="story-property-panel__tag-picker">
           <section
-            v-for="option in tagOptions"
-            :key="option.key"
-            class="story-property-panel__tag-picker-section"
+              v-for="option in tagOptions"
+              :key="option.key"
+              class="story-property-panel__tag-picker-section"
           >
             <div class="story-property-panel__tag-picker-header">
               <span class="story-property-panel__tag-picker-title">{{ option.key }}</span>
@@ -323,14 +352,44 @@ async function handleSave(): Promise<void> {
             </div>
             <div class="story-property-panel__tag-picker-values">
               <a-tag
-                v-for="value in option.values"
-                :key="value"
-                class="story-property-panel__tag-chip"
-                :color="isTagSelected(option.key, value) ? 'orange' : ''"
-                @click="toggleTagSelection(option.key, value)"
+                  v-for="value in option.values"
+                  :key="value"
+                  class="story-property-panel__tag-chip"
+                  :color="isTagSelected(option.key, value) ? 'orange' : ''"
+                  @click="toggleTagSelection(option.key, value)"
               >
                 {{ value }}
               </a-tag>
+            </div>
+          </section>
+
+          <section class="story-property-panel__tag-picker-section">
+            <div class="story-property-panel__tag-picker-header">
+              <span class="story-property-panel__tag-picker-title">自定义</span>
+              <span class="story-property-panel__tag-picker-count">
+                {{ customTagValues.length }} / {{ getTagLimit('自定义') }}
+              </span>
+            </div>
+            <div class="story-property-panel__tag-custom-wrap">
+              <div class="story-property-panel__tag-custom-list">
+                <a-tag
+                    v-for="tag in customTagValues"
+                    :key="tag"
+                    class="story-property-panel__tag-chip"
+                    color="orange"
+                    closable
+                    @close.prevent="removeCustomTag(tag)"
+                >
+                  {{ tag }}
+                </a-tag>
+              </div>
+              <a-input
+                  v-model:value="customTagInput"
+                  size="small"
+                  class="story-property-panel__tag-custom-input"
+                  placeholder="输入后回车添加标签"
+                  @pressEnter="addCustomTagFromInput"
+              />
             </div>
           </section>
         </div>
@@ -396,23 +455,6 @@ async function handleSave(): Promise<void> {
   gap: 8px;
 }
 
-.story-property-panel__tag-add-btn {
-  width: 23px;
-  min-width: 23px;
-  height: 23px;
-  min-height: 23px;
-  padding: 0;
-}
-
-:deep(.story-property-panel__tag-add-btn .ant-btn-icon) {
-  margin-inline-end: 0;
-  width: 100%;
-  height: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .story-property-panel__tag-picker {
   max-height: 560px;
   overflow-y: auto;
@@ -448,6 +490,30 @@ async function handleSave(): Promise<void> {
   gap: 8px;
 }
 
+.story-property-panel__selected-tags {
+  min-height: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.story-property-panel__tag-add-placeholder {
+  margin: 0;
+  width: 40px;
+  max-height: 25px;
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  border-color: v-bind('token.colorTextTertiary');
+  color: v-bind('token.colorTextTertiary');
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
 .story-property-panel__tag-chip {
   border-radius: 6px;
   padding: 5px 8px;
@@ -455,6 +521,30 @@ async function handleSave(): Promise<void> {
   line-height: 1;
   cursor: pointer;
   margin: 0;
+}
+
+.story-property-panel__tag-custom-input {
+  width: 260px;
+  max-width: 100%;
+  min-width: 260px;
+}
+
+.story-property-panel__tag-custom-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.story-property-panel__tag-custom-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+
+:deep(.ant-tag) {
+  font-size: 13px;
+  margin-inline-end: 0;
 }
 
 @media (max-width: 900px) {
