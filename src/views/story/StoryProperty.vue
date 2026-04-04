@@ -19,7 +19,8 @@ import {
   type StoryTargetReader,
   type StoryType,
 } from '@api/story/story.ts'
-import {PlusOutlined} from "@ant-design/icons-vue";
+import {getStoryTagOptions, type StoryTagOptionItem} from '@api/story/tagOption.ts'
+import {PlusOutlined} from '@ant-design/icons-vue'
 
 const {token} = theme.useToken()
 const route = useRoute()
@@ -28,6 +29,17 @@ const storyStore = useStoryStore()
 const storyId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
 const currentStory = computed(() => storyStore.currentStory)
 const saving = ref(false)
+const tagModalOpen = ref(false)
+const tagOptionLoading = ref(false)
+const tagOptions = ref<StoryTagOptionItem[]>([])
+const selectedTagMap = reactive<Record<string, string[]>>({})
+
+const tagLimitMap: Record<string, number> = {
+  题材: 1,
+  时空: 1,
+  情节: 3,
+  情绪: 3,
+}
 
 const formState = reactive({
   title: '',
@@ -89,6 +101,103 @@ watch(
 )
 
 const saveDisabled = computed(() => !storyId.value || !formState.title.trim() || saving.value)
+
+function parsePresetTag(tag: string): { key: string; value: string } | null {
+  const [key = '', value = ''] = tag.split(':')
+  if (!key || !value) {
+    return null
+  }
+  return {
+    key: key.trim(),
+    value: value.trim(),
+  }
+}
+
+function getTagLimit(key: string): number {
+  return tagLimitMap[key] ?? 3
+}
+
+async function ensureTagOptionsLoaded(): Promise<void> {
+  if (tagOptionLoading.value || tagOptions.value.length > 0) {
+    return
+  }
+  tagOptionLoading.value = true
+  try {
+    tagOptions.value = await getStoryTagOptions('story_tag_option')
+  } finally {
+    tagOptionLoading.value = false
+  }
+}
+
+function resetSelectedTagMap(): void {
+  for (const key of Object.keys(selectedTagMap)) {
+    delete selectedTagMap[key]
+  }
+
+  const optionMap = new Map(tagOptions.value.map((option) => [option.key, new Set(option.values)]))
+  for (const tag of formState.tags) {
+    const parsed = parsePresetTag(tag)
+    if (!parsed) {
+      continue
+    }
+    const allowedValues = optionMap.get(parsed.key)
+    if (!allowedValues?.has(parsed.value)) {
+      continue
+    }
+    const list = selectedTagMap[parsed.key] ?? []
+    if (!list.includes(parsed.value)) {
+      list.push(parsed.value)
+      selectedTagMap[parsed.key] = list
+    }
+  }
+}
+
+function toggleTagSelection(key: string, value: string): void {
+  const current = selectedTagMap[key] ?? []
+  if (current.includes(value)) {
+    selectedTagMap[key] = current.filter((item) => item !== value)
+    return
+  }
+
+  if (current.length >= getTagLimit(key)) {
+    message.warning(`${key}最多选择 ${getTagLimit(key)} 个`)
+    return
+  }
+  selectedTagMap[key] = [...current, value]
+}
+
+function isTagSelected(key: string, value: string): boolean {
+  return (selectedTagMap[key] ?? []).includes(value)
+}
+
+function getSelectedCount(key: string): number {
+  return selectedTagMap[key]?.length ?? 0
+}
+
+async function handleOpenTagModal(): Promise<void> {
+  tagModalOpen.value = true
+  await ensureTagOptionsLoaded()
+  resetSelectedTagMap()
+}
+
+function handleTagModalConfirm(): void {
+  const optionKeySet = new Set(tagOptions.value.map((option) => option.key))
+  const preservedTags = formState.tags.filter((tag) => {
+    const parsed = parsePresetTag(tag)
+    return !parsed || !optionKeySet.has(parsed.key)
+  })
+
+  const selectedTags: string[] = []
+  for (const option of tagOptions.value) {
+    const values = selectedTagMap[option.key] ?? []
+    for (const value of values) {
+      selectedTags.push(`${option.key}:${value}`)
+    }
+  }
+
+  formState.tags = [...selectedTags, ...preservedTags]
+  tagModalOpen.value = false
+}
 
 async function handleSave(): Promise<void> {
   if (saveDisabled.value || !storyId.value || !currentStory.value) {
@@ -161,12 +270,12 @@ async function handleSave(): Promise<void> {
 
         <a-form-item>
           <template #label>
-            <span class="story-property-panel__tag-label">
-              <span>标签</span>
-              <a-button type="primary" class="story-property-panel__tag-add-btn">
-                <template #icon>
-                  <PlusOutlined/>
-                </template>
+              <span class="story-property-panel__tag-label">
+                <span>标签</span>
+                <a-button type="primary" class="story-property-panel__tag-add-btn" @click="handleOpenTagModal">
+                  <template #icon>
+                    <PlusOutlined/>
+                  </template>
               </a-button>
             </span>
           </template>
@@ -190,6 +299,43 @@ async function handleSave(): Promise<void> {
         </a-form-item>
       </a-form>
     </div>
+
+    <a-modal
+      v-model:open="tagModalOpen"
+      title="标签"
+      width="980px"
+      ok-text="确定"
+      cancel-text="取消"
+      @ok="handleTagModalConfirm"
+    >
+      <a-spin :spinning="tagOptionLoading">
+        <div class="story-property-panel__tag-picker">
+          <section
+            v-for="option in tagOptions"
+            :key="option.key"
+            class="story-property-panel__tag-picker-section"
+          >
+            <div class="story-property-panel__tag-picker-header">
+              <span class="story-property-panel__tag-picker-title">{{ option.key }}</span>
+              <span class="story-property-panel__tag-picker-count">
+                {{ getSelectedCount(option.key) }} / {{ getTagLimit(option.key) }}
+              </span>
+            </div>
+            <div class="story-property-panel__tag-picker-values">
+              <a-tag
+                v-for="value in option.values"
+                :key="value"
+                class="story-property-panel__tag-chip"
+                :color="isTagSelected(option.key, value) ? 'orange' : ''"
+                @click="toggleTagSelection(option.key, value)"
+              >
+                {{ value }}
+              </a-tag>
+            </div>
+          </section>
+        </div>
+      </a-spin>
+    </a-modal>
   </div>
 </template>
 
@@ -265,6 +411,50 @@ async function handleSave(): Promise<void> {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.story-property-panel__tag-picker {
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.story-property-panel__tag-picker-section {
+  margin-bottom: 16px;
+}
+
+.story-property-panel__tag-picker-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.story-property-panel__tag-picker-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: v-bind('token.colorText');
+}
+
+.story-property-panel__tag-picker-count {
+  color: v-bind('token.colorTextDescription');
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.story-property-panel__tag-picker-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.story-property-panel__tag-chip {
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  margin: 0;
 }
 
 @media (max-width: 900px) {
