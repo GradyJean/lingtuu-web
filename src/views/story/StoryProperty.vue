@@ -311,9 +311,9 @@ async function handleSave(): Promise<void> {
             </span>
           </template>
           <div class="story-property-panel__selected-tags">
+            <a-tag color="orange" v-for="tag in formState.tags" :key="tag">{{ tag }}</a-tag>
             <a-tag class="story-property-panel__tag-add-placeholder" @click="handleOpenTagModal">+
             </a-tag>
-            <a-tag color="orange" v-for="tag in formState.tags" :key="tag">{{ tag }}</a-tag>
           </div>
         </a-form-item>
 
@@ -430,7 +430,7 @@ async function handleSave(): Promise<void> {
 }
 
 .story-property-panel__status-select {
-  width: 70px;
+  width: 80px;
 }
 
 .story-property-panel__content {
