@@ -5,6 +5,31 @@ export type StoryType = 'ALL' | 'SCRIPT' | 'SHORT' | 'LONG' | 'VIDEO'
 export type StoryStatus = 'ALL' | 'DRAFT' | 'WRITING' | 'COMPLETED'
 export type StoryPerspective = 'FIRST' | 'THIRD'
 export type StoryTargetReader = 'FEMALE' | 'MALE' | 'ALL'
+export const storyTypeValues: Exclude<StoryType, 'ALL'>[] = ['SHORT', 'LONG', 'SCRIPT', 'VIDEO']
+export const storyStatusValues: Exclude<StoryStatus, 'ALL'>[] = ['DRAFT', 'WRITING', 'COMPLETED']
+export const storyPerspectiveValues: StoryPerspective[] = ['FIRST', 'THIRD']
+export const storyTargetReaderValues: StoryTargetReader[] = ['FEMALE', 'MALE', 'ALL']
+export const storyTypeLabelMap: Record<Exclude<StoryType, 'ALL'>, string> = {
+    SHORT: '短篇',
+    LONG: '长篇',
+    SCRIPT: '剧本',
+    VIDEO: '视频',
+}
+export const storyStatusLabelMap: Record<Exclude<StoryStatus, 'ALL'>, string> = {
+    DRAFT: '草稿',
+    WRITING: '连载中',
+    COMPLETED: '已完结',
+}
+export const storyPerspectiveLabelMap: Record<StoryPerspective, string> = {
+    FIRST: '第一人称',
+    THIRD: '第三人称',
+}
+export const storyTargetReaderLabelMap: Record<StoryTargetReader, string> = {
+    FEMALE: '女频',
+    MALE: '男频',
+    ALL: '通用',
+}
+export type StoryTypeKey = keyof typeof storyTypeLabelMap | 'ALL'
 
 export interface StoryItem {
     id: string

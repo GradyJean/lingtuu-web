@@ -139,15 +139,16 @@
         </a-form-item>
         <a-form-item label="视角" required>
           <a-radio-group v-model:value="createForm.perspective">
-            <a-radio value="FIRST">第一人称</a-radio>
-            <a-radio value="THIRD">第三人称</a-radio>
+            <a-radio v-for="item in perspectiveOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </a-radio>
           </a-radio-group>
         </a-form-item>
         <a-form-item label="目标读者" required>
           <a-radio-group v-model:value="createForm.targetReader">
-            <a-radio value="FEMALE">女频</a-radio>
-            <a-radio value="MALE">男频</a-radio>
-            <a-radio value="ALL">通用</a-radio>
+            <a-radio v-for="item in targetReaderOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </a-radio>
           </a-radio-group>
         </a-form-item>
       </a-form>
@@ -166,8 +167,22 @@ import {
   DownOutlined,
   DeleteOutlined,
 } from '@ant-design/icons-vue'
-import {getStoryList, type StoryItem, deleteStory, createStory} from '@api/story/story.ts'
-import {storyStatusLabelMap, storyTypeLabelMap, type StoryTypeKey} from '@shared-types/story'
+import {
+  getStoryList,
+  storyPerspectiveLabelMap,
+  storyPerspectiveValues,
+  storyStatusLabelMap,
+  storyTargetReaderLabelMap,
+  storyTargetReaderValues,
+  storyTypeLabelMap,
+  type StoryItem,
+  type StoryPerspective,
+  type StoryTypeKey,
+  type StoryTargetReader,
+  type StoryType,
+  deleteStory,
+  createStory,
+} from '@api/story/story.ts'
 import router from "../../router";
 
 const {token} = theme.useToken()
@@ -192,18 +207,34 @@ const searchTitle = ref('')
 // 创建作品弹窗
 const createModalVisible = ref(false)
 const submitting = ref(false)
+interface CreateFormState {
+  title: string
+  type: Exclude<StoryType, 'ALL'>
+  perspective: StoryPerspective
+  targetReader: StoryTargetReader
+}
 const createForm = ref({
   title: '',
-  type: '' as 'SHORT' | 'LONG' | 'SCRIPT' | 'VIDEO',
-  perspective: 'THIRD' as 'FIRST' | 'THIRD',
-  targetReader: 'ALL' as 'FEMALE' | 'MALE' | 'ALL',
-})
+  type: 'SHORT',
+  perspective: 'THIRD',
+  targetReader: 'ALL',
+} as CreateFormState)
+
+const perspectiveOptions = storyPerspectiveValues.map((value) => ({
+  value,
+  label: storyPerspectiveLabelMap[value],
+}))
+
+const targetReaderOptions = storyTargetReaderValues.map((value) => ({
+  value,
+  label: storyTargetReaderLabelMap[value],
+}))
 
 function handleCardClick(id: string) {
   router.push({name: 'storyDetail', params: {id}})
 }
 
-function openCreateModal(type: 'SHORT' | 'LONG' | 'SCRIPT' | 'VIDEO') {
+function openCreateModal(type: Exclude<StoryType, 'ALL'>) {
   createForm.value = {
     title: '',
     type,
@@ -268,7 +299,7 @@ async function handleDelete(id: string) {
 }
 
 function handleCreate({key}: { key: string }) {
-  openCreateModal(key as 'SHORT' | 'LONG' | 'SCRIPT' | 'VIDEO')
+  openCreateModal(key as Exclude<StoryType, 'ALL'>)
 }
 
 onMounted(() => {

@@ -14,10 +14,10 @@ import {getChapterList} from '@api/story/chapter.ts'
 import {useRoute} from 'vue-router'
 import {useStoryStore} from '@stores/story.ts'
 import {ArrowLeftOutlined} from '@ant-design/icons-vue'
-import {storyStatusLabelMap, storyTypeLabelMap} from '@shared-types/story'
+import {storyStatusLabelMap, storyTypeLabelMap} from '@api/story/story.ts'
 import router from '../../router'
 import Character from "@views/story/Character.vue";
-import World from "@views/story/World.vue";
+import Property from "@views/story/StoryProperty.vue";
 
 const {token} = theme.useToken()
 const uiStore = uiStateStore()
@@ -39,7 +39,7 @@ type WindowPosition = 'left' | 'right'
 type PageState = {
   left: {
     chapter: boolean
-    world: boolean
+    property: boolean
     character: boolean
   }
   right: {
@@ -50,7 +50,7 @@ type PageState = {
 const pageState = ref<PageState>({
   left: {
     chapter: true,
-    world: false,
+    property: false,
     character: false,
   },
   right: {
@@ -70,7 +70,7 @@ async function fetchStoryWordCount(nextStoryId: string): Promise<void> {
 function menuActive(iconKey: string, isActive: boolean): void {
   let windowPosition: WindowPosition = 'left'
   switch (iconKey) {
-    case 'world':
+    case 'property':
     case 'chapter':
     case 'character':
       windowPosition = 'left'
@@ -160,9 +160,9 @@ watch(currentChapterLastSavedAt, (savedAt) => {
     </template>
     <template #left-side>
       <MenuBar>
-        <MenuItem icon-name="strategy" menu-key="world" tips="背景管理" @active="menuActive"/>
-        <MenuItem icon-name="work-plan" menu-key="chapter" tips="章节管理" :default-active="true" @active="menuActive"/>
-        <MenuItem icon-name="contact" menu-key="character" tips="角色管理" @active="menuActive"/>
+        <MenuItem icon-name="box" menu-key="property" tips="属性" @active="menuActive"/>
+        <MenuItem icon-name="work-plan" menu-key="chapter" tips="章节" :default-active="true" @active="menuActive"/>
+        <MenuItem icon-name="contact" menu-key="character" tips="角色" @active="menuActive"/>
       </MenuBar>
     </template>
     <template #right-side>
@@ -174,7 +174,7 @@ watch(currentChapterLastSavedAt, (savedAt) => {
       <WorkContainer>
         <template #left>
           <ChapterList v-if="pageState.left.chapter"/>
-          <World v-if="pageState.left.world"/>
+          <Property v-if="pageState.left.property"/>
           <Character v-if="pageState.left.character"/>
         </template>
         <template #center>

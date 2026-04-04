@@ -390,7 +390,13 @@ watch(
           <template #label>
             <span class="tag-label">
               <span>标签</span>
-              <a-button size="small" type="primary" :loading="tagOptionLoading" @click="addTagDraftRow">
+              <a-button
+                size="small"
+                type="primary"
+                class="tag-label__add-btn"
+                :loading="tagOptionLoading"
+                @click="addTagDraftRow"
+              >
                <template #icon>
                 <PlusOutlined/>
                </template>
@@ -474,6 +480,7 @@ watch(
   gap: 12px;
   padding: 14px 14px 12px;
   border-bottom: 1px solid v-bind('token.colorBorderSecondary');
+  height: 50px;
 }
 
 .character-panel__title-text {
@@ -543,6 +550,27 @@ watch(
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.tag-label__add-btn {
+  width: 23px !important;
+  min-width: 23px !important;
+  height: 23px !important;
+  min-height: 23px !important;
+  padding: 0 !important;
+}
+
+:deep(.tag-label__add-btn .ant-btn-icon) {
+  margin-inline-end: 0 !important;
+  width: 100%;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.tag-label__add-btn .anticon) {
+  line-height: 1;
 }
 
 .tag-row {
