@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import {computed, reactive, ref, watch} from 'vue'
 import {theme} from 'ant-design-vue'
-import {BulbOutlined, CheckOutlined, DeleteOutlined, PlusOutlined} from '@ant-design/icons-vue'
+import {BulbOutlined, CheckOutlined,MinusOutlined, PlusOutlined} from '@ant-design/icons-vue'
 import {useRoute} from 'vue-router'
 import {
   createStoryCharacter,
   deleteStoryCharacter,
   getStoryCharacterList,
-  getStoryCharacterTagOptions,
   type StoryCharacterItem,
-  type StoryCharacterTagOptionItem,
   updateStoryCharacter,
 } from '@api/story/character.ts'
+import {
+  getStoryTagOptions,
+  type StoryTagOptionItem,
+} from '@api/story/tagOption.ts'
 
 const {token} = theme.useToken()
 const route = useRoute()
@@ -33,7 +35,7 @@ const deleteSubmitting = ref(false)
 const characterListLoading = ref(false)
 const characterList = ref<StoryCharacterItem[]>([])
 const tagOptionLoading = ref(false)
-const tagOptions = ref<StoryCharacterTagOptionItem[]>([])
+const tagOptions = ref<StoryTagOptionItem[]>([])
 const tagDraftRows = ref<TagDraftRow[]>([])
 const editingCharacterId = ref('')
 let tagDraftSeed = 0
@@ -57,7 +59,7 @@ async function ensureTagOptionsLoaded(): Promise<void> {
   }
   tagOptionLoading.value = true
   try {
-    tagOptions.value = await getStoryCharacterTagOptions()
+    tagOptions.value = await getStoryTagOptions('character_tag_option')
   } finally {
     tagOptionLoading.value = false
   }
@@ -191,12 +193,12 @@ function resolveCharacterGender(character: StoryCharacterItem): string {
 function resolveCharacterColor(character: StoryCharacterItem): string {
   const gender = resolveCharacterGender(character)
   if (gender === '男') {
-    return 'blue'
+    return 'green'
   }
   if (gender === '女') {
     return 'pink'
   }
-  return 'green'
+  return 'orange'
 }
 
 const groupedCharacterList = computed(() => {
@@ -442,9 +444,9 @@ watch(
                   <CheckOutlined/>
                 </template>
               </a-button>
-              <a-button size="small" danger @click="removeTagDraftRow(row.id)">
+              <a-button size="small" danger  @click="removeTagDraftRow(row.id)">
                 <template #icon>
-                  <DeleteOutlined/>
+                  <MinusOutlined/>
                 </template>
               </a-button>
             </div>
@@ -495,7 +497,7 @@ watch(
 .character-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 15px;
 }
 
 .character-group {
@@ -519,9 +521,8 @@ watch(
 .character-list__tag {
   margin: 0;
   cursor: pointer;
-  height: 30px;
-  line-height: 30px;
-  padding: 0 10px;
+  height: 25px;
+  line-height: 24px;
   font-size: 13px;
 }
 

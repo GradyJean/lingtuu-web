@@ -13,11 +13,6 @@ export interface StoryCharacterItem {
     updatedAt: string
 }
 
-export interface StoryCharacterTagOptionItem {
-    key: string
-    values: string[]
-}
-
 export interface StoryCharacterListParams extends PageInput {
     name?: string
 }
@@ -67,11 +62,4 @@ export function updateStoryCharacter(storyId: string, id: string, data: UpdateSt
  */
 export function deleteStoryCharacter(storyId: string, id: string): Promise<boolean> {
     return appApi.delete<boolean>(`/api/story/${storyId}/character/${id}`)
-}
-
-/**
- * 获取角色标签选项
- */
-export function getStoryCharacterTagOptions(): Promise<StoryCharacterTagOptionItem[]> {
-    return appApi.get<StoryCharacterTagOptionItem[]>('/api/story/character/tag/options')
 }
